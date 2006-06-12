@@ -79,9 +79,12 @@ def GetPathList():
 class PkgDB:
    """ Holds all the neccesary information to evaluate itself when needed.
    """
-   mPkgInfoList = []
 
-   def BuildPcFileDict():
+   def __init__(self):
+      self.mPkgInfoList = []
+      self.PopulatePkgInfoDB()
+
+   def BuildPcFileDict(self):
       """ Builds up a dictionary of {name: list of files for name} """
       pc_dict = {}
       for p in GetPathList():
@@ -95,13 +98,25 @@ class PkgDB:
       
       return pc_dict # { "key", [ "list", "of", "corresponding", "pc", "files"] }
 
-   def PopulatePkgInfoDB():
-      print "populating"
+   def PopulatePkgInfoDB(self):
+      print "populating db"
+      dict_to_pop_from = self.BuildPcFileDict()
+      for pkg in dict_to_pop_from:
+         print "adding: " + str(pkg)
+         self.mPkgInfoList.append(PkgInfo(pkg[0],pkg[1]))
 
 class PkgInfo:
    """ Holds the information for a package file on the system. These however
        are evaluated when the need arises.
    """
+
+   def __init__(self, name, fileList):
+      self.mName = name
+      self.mFileList = fileList
+
+   def evaluate():
+   # Currently only evaluates first file
+      return parse(mFileList[0])
    
    def parse(filename):
       lines = open(filename).readlines()
@@ -142,6 +157,8 @@ option_parser = GetOptionParser()
 if options.version:
    print "%s.%s.%s" % GetFlagpollVersion()
    sys.exit(0)
+
+myPkgDB = PkgDB()
 
 #my_pc_dict = BuildPcFileDict()
 
