@@ -1,1 +1,10 @@
-Flag Poll is meant to be initially a drop in replacement for pkg-config that was designed to overcome the inherit limitations that pkg-config places on its use.
+Flag Poll
+------------------------------
+---- Background ----
+Flag Poll is meant to be a drop in replacement for pkg-config. It was designed to overcome the inherit limitations that pkg-config places on its use. Flag Poll will go far beyond the limits that pkg-config has constrained itself to.
+
+---- Use ----
+It is exactly the same as pkg-config usage with the following additions/considerations.
+
+---- Dependencies ----
+Python 2.4 or greater
