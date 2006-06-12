@@ -34,6 +34,7 @@ from string import Template
 import sys
 import os
 import glob
+import logging
 
 def GetFlagpollVersion():
    FLAGPOLL_MAJOR_VERSION = 0
@@ -66,6 +67,7 @@ class PkgDB:
             return pkg.getInfo()
 
    def __init__(self):
+      self.log = logging.getLogger('PkgDB')
       self.mPkgInfoList = []
       self.PopulatePkgInfoDB()
 
@@ -95,6 +97,7 @@ class PkgInfo:
    """
 
    def __init__(self, name, fileList, version="None"):
+      self.log = logging.getLogger('PkgInfo')
       self.mName = name
       self.mVersion = version
       self.mFileList = fileList
@@ -154,6 +157,8 @@ class PkgInfo:
 class OptionsEvaluator:
    
    def __init__(self):
+      logging.basicConfig(level=logging.ERROR, format='%(name)-12s: %(levelname)-8s %(message)s')
+      self.log = logging.getLogger('OptionsEvaluator')
       self.mOptParser = self.GetOptionParser()
       (self.mOptions, self.mArgs) = self.mOptParser.parse_args()
       if self.mOptions.version:
@@ -164,8 +169,9 @@ class OptionsEvaluator:
    def evaluateArgs(self):
 
       if self.mOptions.debug:
-         print self.mPkgDB.getInfo(self.mArgs[0])
-         print "Ran with extra args: " + str(self.mArgs)
+         self.log.setLevel(logging.DEBUG)
+         self.log.debug(self.mPkgDB.getInfo(self.mArgs[0]))
+         self.log.debug("Ran with extra args: " + str(self.mArgs))
 
       if not self.mOptions.variable ==  "":
          print self.mPkgDB.getVariable(self.mArgs[0], self.mOptions.variable)
@@ -199,6 +205,7 @@ class OptionsEvaluator:
       parser.add_option("--variable", dest="variable", help="get the value of a variable")
       parser.add_option("--define-variable", dest="define_variable", help="set the value of a variable")
       return parser
+
 
 # GO!
 opt_evaluator = OptionsEvaluator()
