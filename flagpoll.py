@@ -113,10 +113,14 @@ class PkgInfo:
    def __init__(self, name, fileList):
       self.mName = name
       self.mFileList = fileList
+      self.mIsEvaluated = False
+      self.mVariableList = []
 
-   def evaluate():
-   # Currently only evaluates first file
-      return parse(mFileList[0])
+   def evaluate(self):
+      # Currently only evaluates first file
+      if !self.mIsEvaluated:
+         self.mVariableList.extend(parse(self.mFileList[0]))
+      return self.mVariableList
    
    def parse(filename):
       lines = open(filename).readlines()
