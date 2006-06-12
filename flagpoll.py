@@ -80,6 +80,12 @@ class PkgDB:
    """ Holds all the neccesary information to evaluate itself when needed.
    """
 
+   def getInfo(self, name):
+      for pkg in self.mPkgInfoList:
+         print name + ":" + pkg.mName
+         if(name == pkg.mName):
+            return pkg.evaluate()
+
    def __init__(self):
       self.mPkgInfoList = []
       self.PopulatePkgInfoDB()
@@ -103,7 +109,7 @@ class PkgDB:
       dict_to_pop_from = self.BuildPcFileDict()
       for pkg in dict_to_pop_from:
          print "adding: " + str(pkg)
-         self.mPkgInfoList.append(PkgInfo(pkg[0],pkg[1]))
+         self.mPkgInfoList.append(PkgInfo(str(pkg), dict_to_pop_from[pkg]))
 
 class PkgInfo:
    """ Holds the information for a package file on the system. These however
@@ -114,15 +120,16 @@ class PkgInfo:
       self.mName = name
       self.mFileList = fileList
       self.mIsEvaluated = False
-      self.mVariableList = []
+      self.mVariableDict = {}
 
    def evaluate(self):
       # Currently only evaluates first file
-      if !self.mIsEvaluated:
-         self.mVariableList.extend(parse(self.mFileList[0]))
-      return self.mVariableList
+      if not self.mIsEvaluated:
+         self.mVariableDict= self.parse(self.mFileList[0])
+         self.mIsEvaluated = True
+      return self.mVariableDict
    
-   def parse(filename):
+   def parse(self, filename):
       lines = open(filename).readlines()
       vars = {}
       locals = {}
@@ -163,6 +170,7 @@ if options.version:
    sys.exit(0)
 
 myPkgDB = PkgDB()
+print myPkgDB.getInfo(args[0])
 
 #my_pc_dict = BuildPcFileDict()
 
