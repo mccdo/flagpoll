@@ -78,13 +78,20 @@ def GetPathList():
 
 class PkgDB:
    """ Holds all the neccesary information to evaluate itself when needed.
+       Is in charge of holding a list of PkgInfo's that contain info
+       about the package.
    """
+
+   def getVariable(self, name, variable):
+      for pkg in self.mPkgInfoList:
+         if(name == pkg.getName()):
+            return pkg.getVariable(variable)
+         
 
    def getInfo(self, name):
       for pkg in self.mPkgInfoList:
-         print name + ":" + pkg.mName
-         if(name == pkg.mName):
-            return pkg.evaluate()
+         if(name == pkg.getName()):
+            return pkg.getInfo()
 
    def __init__(self):
       self.mPkgInfoList = []
@@ -108,7 +115,7 @@ class PkgDB:
       print "populating db"
       dict_to_pop_from = self.BuildPcFileDict()
       for pkg in dict_to_pop_from:
-         print "adding: " + str(pkg)
+         #print "adding: " + str(pkg)
          self.mPkgInfoList.append(PkgInfo(str(pkg), dict_to_pop_from[pkg]))
 
 class PkgInfo:
@@ -116,17 +123,31 @@ class PkgInfo:
        are evaluated when the need arises.
    """
 
-   def __init__(self, name, fileList):
+   def __init__(self, name, fileList, version="None"):
       self.mName = name
+      self.mVersion = version
       self.mFileList = fileList
       self.mIsEvaluated = False
       self.mVariableDict = {}
 
+   def getVariable(self, variable):
+      if self.mVariableDict.has_key(variable):
+         return self.mVariableDict[variable]
+      else:
+         return ""
+
+   def getName(self):
+      return self.mName
+
    def evaluate(self):
       # Currently only evaluates first file
       if not self.mIsEvaluated:
+         print "Evaluating %s" % self.mName
          self.mVariableDict= self.parse(self.mFileList[0])
          self.mIsEvaluated = True
+   
+   def getInfo(self):
+      self.evaluate()
       return self.mVariableDict
    
    def parse(self, filename):
@@ -156,11 +177,9 @@ class PkgInfo:
          locals[name] = val
       return vars
 
-   def GetVariables(name, pc_dict):
-      if pc_dict.has_key(name):
-         list_of_files = pc_dict[name]
-         for f in list_of_files:
-            print parse(f)
+
+
+
 
 option_parser = GetOptionParser()
 (options, args) = option_parser.parse_args()
@@ -170,13 +189,16 @@ if options.version:
    sys.exit(0)
 
 myPkgDB = PkgDB()
-print myPkgDB.getInfo(args[0])
+
+
+if options.debug:
+   print myPkgDB.getInfo(args[0])
+   print "Ran with extra args: " + str(args)
 
 #my_pc_dict = BuildPcFileDict()
 
+if not options.variable ==  "":
+   print myPkgDB.getVariable(args[0], options.variable)
+
 #if options.cflags:
 #   GetVariables(args[0], my_pc_dict)
-
-
-#if options.debug:
-#   print my_pc_dict
