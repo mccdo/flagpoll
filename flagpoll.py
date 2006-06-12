@@ -1,3 +1,4 @@
+#    -----------------------------------------------------------------
 #
 #    Flag Poll: A tool to extract flags from installed applications
 #    for compiling, settting variables, etc.
@@ -23,10 +24,6 @@
 #    51 Franklin Street, Fifth Floor, 
 #    Boston, MA  02110-1301  USA
 #
-#    -----------------------------------------------------------------
-#    File:          $RCSfile: xmlparser.cpp,v $
-#    Date modified: $Date: 2006/06/02 16:29:03 $
-#    Version:       $Revision: 1.30 $
 #    -----------------------------------------------------------------
 
 
