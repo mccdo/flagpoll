@@ -1,0 +1,1 @@
+Flag Poll is meant to be initially a drop in replacement for pkg-config that was designed to overcome the inherit limitations that pkg-config places on its use.
