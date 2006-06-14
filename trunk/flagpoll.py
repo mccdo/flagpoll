@@ -47,7 +47,60 @@ def GetFlagpollVersion():
 def GetPathList():
    return ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
 
+class DepResolutionSystem:
+   """ You add PkgAgents with constraints into system and call resolve()
+       you can check for succes by depsSatisfied() and get the list
+       of packages that work back by calling getPackages()
+   """
 
+   def __init__(self):
+      self.mResolveAgents = []
+      self.mAgents = {}
+      self.mFilters = []
+      self.mSatisfied = False
+      self.mAgentChangeList = [] # list of those responsible for adding constraints
+                                 # to agents in higher in the chain than them
+                                 # these are the first agents to ask that they pick
+                                 # the next best package of them
+      self.mResolvedPackageList = [] # list that is generated when deps are satified
+
+   def isSatisfied(self):
+      return self.mSatisfied
+
+   def getPackages(self):
+      return self.mResolvedPackageList
+
+   def resolveDeps(self):
+      return
+      # ask mResolveAgents if they are done(they ask sub people)
+      # if there were changes...run update on mResolveAgents again
+      # at the end ask for pkglist..if it comes back empty then we don't
+      # have a usable configuration for those packages
+
+
+class PkgAgent:
+   """ Agent that keeps track of the versions for a package given some filters
+       and the addition of constraints
+   """
+   def init(self, name, constraint_list):
+   #   Makes a PkgAgent that finds its current package with the version reqs
+      self.mName = name
+      self.mCurrentPackage # lookup name based on filters
+      self.mAgentDependList = []
+      self.mBasePackageList = [] # Sorted by filters
+      self.mViablePackageList = mBasePackageList
+      self.mBaseConstraints = constraint_list
+      self.mConstraintList = mBaseConstraints
+      self.mConstraintsChanged = True
+
+   def addConstraint(self, constraint):
+      self.mConstraintList.append(constraint)
+
+   def update(self):
+      if self.mConstraintsChanged:
+         mConstraintsChanged = False
+         # do hard work here....
+      return
 
 class PkgDB:
    """ Holds all the neccesary information to evaluate itself when needed.
@@ -59,7 +112,14 @@ class PkgDB:
       for pkg in self.mPkgInfoList:
          if(name == pkg.getName()):
             return pkg.getVariable(variable)
-         
+
+  #def getVariableRecursively(self, name, variable):
+  #    for pkg in self.mPkgInfoList:
+  #       if(name == pkg.getName()):
+  #          variable_concat=pkg.getVariable(variable)
+  #          requires_dict=self.buildRequiresDict(name)
+  #          for
+
 
    def getInfo(self, name):
       for pkg in self.mPkgInfoList:
