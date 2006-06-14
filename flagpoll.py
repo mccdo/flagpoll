@@ -71,6 +71,7 @@ class DepResolutionSystem:
       return self.mResolvedPackageList
 
    def resolveDeps(self):
+      # TODO: implement
       return
       # ask mResolveAgents if they are done(they ask sub people)
       # if there were changes...run update on mResolveAgents again
@@ -85,10 +86,10 @@ class PkgAgent:
    def init(self, name, constraint_list):
    #   Makes a PkgAgent that finds its current package with the version reqs
       self.mName = name
-      self.mCurrentPackage # lookup name based on filters
-      self.mAgentDependList = []
-      self.mBasePackageList = [] # Sorted by filters
+      self.mBasePackageList = [] # TODO: Sorted by filters
       self.mViablePackageList = mBasePackageList
+      self.mCurrentPackage = mViablePackageList[0] #TODO: check for size
+      self.mAgentDependList = [] # Agents that it depends on/needs to update
       self.mBaseConstraints = constraint_list
       self.mConstraintList = mBaseConstraints
       self.mConstraintsChanged = True
@@ -99,8 +100,23 @@ class PkgAgent:
    def update(self):
       if self.mConstraintsChanged:
          mConstraintsChanged = False
-         # do hard work here....
+         # TODO: do hard work here....
       return
+
+class Constraint:
+   """ A single constraint that knows how to enforce itself.
+       Will be inheireted....?..?
+   """
+   
+   def __init__(self):
+      self.mIsSatifisfied = false
+
+   def check(self):
+      # TODO: check to see if constraint is satisfied
+      return self.mIsSatisfied
+      
+   def isSatisfied(self):
+      return self.mIsSatisfied
 
 class PkgDB:
    """ Holds all the neccesary information to evaluate itself when needed.
