@@ -71,7 +71,8 @@ class DepResolutionSystem:
       return self.mResolvedPackageList
 
    def resolveDeps(self):
-      # TODO: implement
+      for agent in self.mResolveAgents:
+         agent.update()
       return
       # ask mResolveAgents if they are done(they ask sub people)
       # if there were changes...run update on mResolveAgents again
@@ -94,6 +95,9 @@ class PkgAgent:
       self.mConstraintList = mBaseConstraints
       self.mConstraintsChanged = True
 
+   def constraintsChanged(self):
+      return self.mConstraintsChanged # or all its deps too...infinite recurs possible
+
    def addConstraint(self, constraint):
       self.mConstraintList.append(constraint)
 
@@ -101,6 +105,7 @@ class PkgAgent:
       if self.mConstraintsChanged:
          mConstraintsChanged = False
          # TODO: do hard work here....
+         
       return
 
 class Constraint:
@@ -143,7 +148,7 @@ class PkgDB:
             return pkg.getInfo()
 
    def __init__(self):
-      self.log = logging.getLogger('PkgDB')
+      self.log = logging.getLogger('flagpoll.PkgDB')
       self.mPkgInfoList = []
       self.PopulatePkgInfoDB()
 
@@ -173,7 +178,7 @@ class PkgInfo:
    """
 
    def __init__(self, name, fileList, version="None"):
-      self.log = logging.getLogger('PkgInfo')
+      self.log = logging.getLogger('flagpoll.PkgInfo')
       self.mName = name
       self.mVersion = version
       self.mFileList = fileList
@@ -194,7 +199,7 @@ class PkgInfo:
       # Would need to find right version by parsing
       # all files and returning the right one
       if not self.mIsEvaluated:
-         print "Evaluating %s" % self.mName
+         self.log.debug("Evaluating %s" % self.mName)
          self.mVariableDict= self.parse(self.mFileList[0])
          self.mIsEvaluated = True
    
@@ -233,13 +238,30 @@ class PkgInfo:
 class OptionsEvaluator:
    
    def __init__(self):
-      logging.basicConfig(level=logging.ERROR, format='%(name)-12s: %(levelname)-8s %(message)s')
-      self.log = logging.getLogger('OptionsEvaluator')
+      # set up logging
+      self.log = logging.getLogger('flagpoll')
+      self.hdlr = logging.StreamHandler()
+      self.formatter = logging.Formatter('%(name)s %(levelname)s %(message)s')
+      self.hdlr.setFormatter(self.formatter)
+      self.log.addHandler(self.hdlr)
+      self.log.setLevel(logging.INFO)
+
+      logging.addLevelName(1,"ALL")
+      self.outputlog = logging.getLogger('output')
+      self.outhdlr = logging.StreamHandler()
+      self.outformatter = logging.Formatter('%(message)s')
+      self.outhdlr.setFormatter(self.outformatter)
+      self.outputlog.addHandler(self.outhdlr)
+      self.outputlog.setLevel(1)
+
       self.mOptParser = self.GetOptionParser()
       (self.mOptions, self.mArgs) = self.mOptParser.parse_args()
       if self.mOptions.version:
-         print "%s.%s.%s" % GetFlagpollVersion()
+         self.outputlog("%s.%s.%s" % GetFlagpollVersion())
          sys.exit(0)
+      if len(self.mArgs) < 1:
+         self.mOptParser.print_help()
+         sys.exit(1)
       self.mPkgDB = PkgDB()
 
    def evaluateArgs(self):
