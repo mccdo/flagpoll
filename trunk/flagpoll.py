@@ -45,6 +45,8 @@ def GetFlagpollVersion():
 
 
 def GetPathList():
+   #TODO: expand LD_LIBRARY_PATH and check in there
+   #      look in PKG_CONFIG_DIR and in our dir?
    return ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
 
 class DepResolutionSystem:
@@ -62,7 +64,9 @@ class DepResolutionSystem:
                                  # to agents in higher in the chain than them
                                  # these are the first agents to ask that they pick
                                  # the next best package of them
+      self.mAgentsVisitedList = [] # list of Agents that have been visited
       self.mResolvedPackageList = [] # list that is generated when deps are satified
+
 
    def isSatisfied(self):
       return self.mSatisfied
@@ -71,10 +75,12 @@ class DepResolutionSystem:
       return self.mResolvedPackageList
 
    def resolveDeps(self):
-      for agent in self.mResolveAgents:
-         agent.update()
+      while resolveAgentsChanged:
+         for agent in self.mResolveAgents:
+            agent.update(self.mAgentsVisitedList, self.mAgentChangeList)
       return
-      # ask mResolveAgents if they are done(they ask sub people)
+      # ask mResolveAgents if they are done(they ask sub people) unless they are
+      # really above you in the walk
       # if there were changes...run update on mResolveAgents again
       # at the end ask for pkglist..if it comes back empty then we don't
       # have a usable configuration for those packages
@@ -87,7 +93,7 @@ class PkgAgent:
    def init(self, name, constraint_list):
    #   Makes a PkgAgent that finds its current package with the version reqs
       self.mName = name
-      self.mBasePackageList = [] # TODO: Sorted by filters
+      self.mBasePackageList = [] # TODO: Sorted by filters and obtained from PkgDB
       self.mViablePackageList = mBasePackageList
       self.mCurrentPackage = mViablePackageList[0] #TODO: check for size
       self.mAgentDependList = [] # Agents that it depends on/needs to update
@@ -101,11 +107,24 @@ class PkgAgent:
    def addConstraint(self, constraint):
       self.mConstraintList.append(constraint)
 
-   def update(self):
+   def update(self, agentVisitedList, agentChangeList):
+      if self.name in agentVisitedList:
+         return
       if self.mConstraintsChanged:
-         mConstraintsChanged = False
-         # TODO: do hard work here....
-         
+         self.mConstraintsChanged = False
+         agentVisitedList.append(self.mName)
+         # TODO: checkConstraints and add them
+         # if a pkg is in visitedList then add yourself to agentChangeList
+         for pkg in mAgentDependList:
+            pkg.update(agentVisitedList, agentChangeList)
+      return
+
+   def reset(self):
+      self.mViablePackageList = mBasePackageList
+      self.mCurrentPacakge = mViablePackageList[0]
+      self.mConstraintList = mBaseConstraints
+      self.mAgentDependList = []
+      self.mConstraintsChanged = True
       return
 
 class Constraint:
