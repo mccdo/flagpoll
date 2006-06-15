@@ -74,17 +74,24 @@ class DepResolutionSystem:
    def getPackages(self):
       return self.mResolvedPackageList
 
-   def resolveDeps(self):
-      while resolveAgentsChanged:
-         for agent in self.mResolveAgents:
-            agent.update(self.mAgentsVisitedList, self.mAgentChangeList)
-      return
+   def checkSatisfied(self)
+      true_false_list = []
+      for pkg in mResolveAgents:
+         true_false_list.append(pkg.constraintsChanged()) 
+
+      return True in true_false_list
+
+
       # ask mResolveAgents if they are done(they ask sub people) unless they are
       # really above you in the walk
       # if there were changes...run update on mResolveAgents again
       # at the end ask for pkglist..if it comes back empty then we don't
       # have a usable configuration for those packages
-
+   def resolveDeps(self):
+      while resolveAgentsChanged:
+         for agent in self.mResolveAgents:
+            agent.update(self.mAgentsVisitedList, self.mAgentChangeList)
+      return
 
 class PkgAgent:
    """ Agent that keeps track of the versions for a package given some filters
@@ -104,8 +111,23 @@ class PkgAgent:
    def constraintsChanged(self):
       return self.mConstraintsChanged # or all its deps too...infinite recurs possible
 
+   def getCurrentPackageList(self, packageList):
+      if self.mName not in packageList
+         packageList.append(self.mName)
+         for pkg in self.mAgentDependList:
+            pkg.getCurrentPackageList
+      return packageList
+
+   def getCurrentPkgInfo(self)
+      return # current pkginfo for me
+
    def addConstraint(self, constraint):
+      mConstraintsChanged = True
       self.mConstraintList.append(constraint)
+
+   def removeCurrentPackage(self):
+      del mViablePackageList[0]
+      mCurrentPackage = mViablePackageList[0]
 
    def update(self, agentVisitedList, agentChangeList):
       if self.name in agentVisitedList:
