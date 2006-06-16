@@ -78,7 +78,6 @@ class DepResolutionSystem:
       true_false_list = []
       for pkg in mResolveAgents:
          true_false_list.append(pkg.constraintsChanged()) 
-
       return True in true_false_list
 
 
@@ -314,6 +313,22 @@ class OptionsEvaluator:
 
       if not self.mOptions.variable ==  "":
          print self.mPkgDB.getVariable(self.mArgs[0], self.mOptions.variable)
+
+      if not self.mOptions.modversion:
+         print self.mPkgDB.getVariable(self.mArgs[0], "Version")
+         
+      if not self.mOptions.libs:
+         print self.mPkgDB.getVariableAndDeps(self.mArgs[0], "Libs")
+
+      if not self.mOptions.static:
+         print self.mPkgDB.getVariable(self.mArgs[0], "Static")
+
+      if not self.mOptions.cflags:
+         print self.mPkgDB.getVariableAndDeps(self.mArgs[0], "Cflags")
+
+      if not self.mOptions.list_all:
+         print self.mPkgDB.getPkgList
+
 
    def GetOptionParser(self):
       parser = OptionParser()
