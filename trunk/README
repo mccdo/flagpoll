@@ -8,3 +8,15 @@ It is exactly the same as pkg-config usage with the following additions/consider
 
 ---- Dependencies ----
 Python 2.4 or greater
+
+---- Features ---
+* Completely eliminates need for *-config scripts
+* Backwards compatible with Pkg-Config .pc files
+* Not tied to any software...completely generic
+* Smart version lookup(Pkg-Config has "first in list that matches")
+   * Able to get newest version of a package and all of its dependencies that work together.
+   * Able to get newest point release or patch release of a package and all of its dependencies that work together.
+   * Able to cope with multiple architectures, multiple compilers, and parallel software installs
+   * Able to filter packages in a more generic arbitrary way
+* Relaxed naming conventions on its own file format
+* Evaluated file format for incorporation of logic (more about this later)
