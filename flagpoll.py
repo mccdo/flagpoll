@@ -72,24 +72,37 @@ class DepResolutionSystem:
       return self.mSatisfied
 
    def getPackages(self):
+      # If this comes back empty then there isn't a valid set of packages to use
       return self.mResolvedPackageList
 
-   def checkSatisfied(self)
+   def checkConstraintsChanged(self)
       true_false_list = []
       for pkg in mResolveAgents:
          true_false_list.append(pkg.constraintsChanged()) 
       return True in true_false_list
 
-
-      # ask mResolveAgents if they are done(they ask sub people) unless they are
+      # Ask mResolveAgents if they are done(they ask sub people) unless they are
       # really above you in the walk
-      # if there were changes...run update on mResolveAgents again
+      # If there were changes...run update on mResolveAgents again
       # at the end ask for pkglist..if it comes back empty then we don't
       # have a usable configuration for those packages
    def resolveDeps(self):
-      while resolveAgentsChanged:
+      while self.resolveAgentsChanged:
          for agent in self.mResolveAgents:
             agent.update(self.mAgentsVisitedList, self.mAgentChangeList)
+         self.resolveAgentsChanges = checkConstraintsChanged()
+      # Check if the first round through we found something
+      # Otherwise we need to start removing packages that aren't viable
+      # during the loop
+      self.mResolvedPackageList = getPackages()
+      if not len(mResolvedPacakgeList) == 0:
+         self.mSatisfied = True
+      
+     while  not isSatisfied():
+         # remove top of packages that added constraints.
+         # then move on to resolving again
+         # remove more if neccesary
+      
       return
 
 class PkgAgent:
@@ -328,6 +341,9 @@ class OptionsEvaluator:
 
       if not self.mOptions.list_all:
          print self.mPkgDB.getPkgList
+
+      if not self.mOptions.exists:
+         print self.mPkgDB.checkExistence(self.mArgs[0])
 
 
    def GetOptionParser(self):
