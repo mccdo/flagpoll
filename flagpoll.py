@@ -49,11 +49,16 @@ def GetPathList():
    #      look in PKG_CONFIG_DIR and in our dir?
    return ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
 
-class DepResolutionSystem:
+class DepResolutionSystem(object):
    """ You add PkgAgents with constraints into system and call resolve()
        you can check for succes by depsSatisfied() and get the list
        of packages that work back by calling getPackages()
    """
+
+   def __new__(type):
+      if not '_the_instance' in type.__dict__:
+         type._the_instance = object.__new__(type)
+      return type._the_instance
 
    def __init__(self):
       self.mResolveAgents = []
@@ -75,7 +80,7 @@ class DepResolutionSystem:
       # If this comes back empty then there isn't a valid set of packages to use
       return self.mResolvedPackageList
 
-   def checkConstraintsChanged(self)
+   def checkConstraintsChanged(self):
       true_false_list = []
       for pkg in mResolveAgents:
          true_false_list.append(pkg.constraintsChanged()) 
@@ -98,7 +103,8 @@ class DepResolutionSystem:
       if not len(mResolvedPacakgeList) == 0:
          self.mSatisfied = True
       
-     while  not isSatisfied():
+      while not isSatisfied():
+         resolveDeps()
          # remove top of packages that added constraints.
          # then move on to resolving again
          # remove more if neccesary
@@ -124,13 +130,13 @@ class PkgAgent:
       return self.mConstraintsChanged # or all its deps too...infinite recurs possible
 
    def getCurrentPackageList(self, packageList):
-      if self.mName not in packageList
+      if self.mName not in packageList:
          packageList.append(self.mName)
          for pkg in self.mAgentDependList:
             pkg.getCurrentPackageList
       return packageList
 
-   def getCurrentPkgInfo(self)
+   def getCurrentPkgInfo(self):
       return # current pkginfo for me
 
    def addConstraint(self, constraint):
@@ -187,6 +193,11 @@ class PkgDB:
          if(name == pkg.getName()):
             return pkg.getVariable(variable)
 
+   def getVariableAndDeps(self, name, variable):
+      for pkg in self.mPkgInfoList:
+         if(name == pkg.getName()):
+            return pkg.getVariable(variable)
+
   #def getVariableRecursively(self, name, variable):
   #    for pkg in self.mPkgInfoList:
   #       if(name == pkg.getName()):
@@ -199,6 +210,11 @@ class PkgDB:
       for pkg in self.mPkgInfoList:
          if(name == pkg.getName()):
             return pkg.getInfo()
+
+   def __new__(type):
+      if not '_the_instance' in type.__dict__:
+         type._the_instance = object.__new__(type)
+      return type._the_instance
 
    def __init__(self):
       self.log = logging.getLogger('flagpoll.PkgDB')
@@ -339,11 +355,11 @@ class OptionsEvaluator:
       if not self.mOptions.cflags:
          print self.mPkgDB.getVariableAndDeps(self.mArgs[0], "Cflags")
 
-      if not self.mOptions.list_all:
-         print self.mPkgDB.getPkgList
+#      if not self.mOptions.list_all:
+#        print self.mPkgDB.getPkgList
 
-      if not self.mOptions.exists:
-         print self.mPkgDB.checkExistence(self.mArgs[0])
+#      if not self.mOptions.exists:
+#         print self.mPkgDB.checkExistence(self.mArgs[0])
 
 
    def GetOptionParser(self):
@@ -379,5 +395,6 @@ class OptionsEvaluator:
 
 # GO!
 opt_evaluator = OptionsEvaluator()
+my_dep_system = DepResolutionSystem()
 opt_evaluator.evaluateArgs()
 sys.exit(0)
