@@ -172,8 +172,16 @@ class Constraint:
        Will be inheireted....?..?
    """
    
-   def __init__(self):
+   def __init__(self, constraintString):
       self.mIsSatifisfied = false
+      self.mConstraintString = constraintString
+      self.mRHS = []
+      self.mLHS = []
+      self.mLogicSymbol = []
+      self.mFilteredList = []
+
+   def filter(self, pkg_list):
+      return self.mFilteredList
 
    def check(self):
       # TODO: check to see if constraint is satisfied
@@ -182,7 +190,7 @@ class Constraint:
    def isSatisfied(self):
       return self.mIsSatisfied
 
-class PkgDB:
+class PkgDB(object):
    """ Holds all the neccesary information to evaluate itself when needed.
        Is in charge of holding a list of PkgInfo's that contain info
        about the package.
@@ -238,7 +246,6 @@ class PkgDB:
    def PopulatePkgInfoDB(self):
       dict_to_pop_from = self.BuildPcFileDict()
       for pkg in dict_to_pop_from:
-         #print "adding: " + str(pkg)
          self.mPkgInfoList.append(PkgInfo(str(pkg), dict_to_pop_from[pkg]))
 
 class PkgInfo:
