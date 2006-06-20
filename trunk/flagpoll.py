@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #    -----------------------------------------------------------------
 #
 #    Flag Poll: A tool to extract flags from installed applications
@@ -27,8 +29,6 @@
 #    -----------------------------------------------------------------
 
 
-
-
 from optparse import OptionParser
 from string import Template
 import sys
@@ -41,8 +41,6 @@ def GetFlagpollVersion():
    FLAGPOLL_MINOR_VERSION = 1
    FLAGPOLL_PATCH_VERSION = 1
    return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
-
-
 
 def GetPathList():
    #TODO: expand LD_LIBRARY_PATH and check in there
@@ -82,48 +80,59 @@ class DepResolutionSystem(object):
 
    def checkConstraintsChanged(self):
       true_false_list = []
-      for pkg in mResolveAgents:
+      for pkg in self.mResolveAgents:
          true_false_list.append(pkg.constraintsChanged()) 
       return True in true_false_list
 
-      # Ask mResolveAgents if they are done(they ask sub people) unless they are
-      # really above you in the walk
-      # If there were changes...run update on mResolveAgents again
-      # at the end ask for pkglist..if it comes back empty then we don't
-      # have a usable configuration for those packages
+   # Ask mResolveAgents if they are done(they ask sub people) unless they are
+   # really above you in the walk
+   # If there were changes...run update on mResolveAgents again
+   # at the end ask for pkglist..if it comes back empty then we don't
+   # have a usable configuration for those packages
    def resolveDeps(self):
       while self.resolveAgentsChanged:
          for agent in self.mResolveAgents:
             agent.update(self.mAgentsVisitedList, self.mAgentChangeList)
-         self.resolveAgentsChanges = checkConstraintsChanged()
+         self.resolveAgentsChanged = checkConstraintsChanged()
+
       # Check if the first round through we found something
       # Otherwise we need to start removing packages that aren't viable
       # during the loop
-      self.mResolvedPackageList = getPackages()
-      if not len(mResolvedPacakgeList) == 0:
+      if not mResolvedPacakgeList:
          self.mSatisfied = True
       
-      while not isSatisfied():
-         resolveDeps()
-         # remove top of packages that added constraints.
-         # then move on to resolving again
-         # remove more if neccesary
-      
+      # remove top of packages that added constraints.
+      # then move on to resolving again
+      # remove more if neccesary
+      agentChangeNumber = 0
+      while not self.mResolvedPackageList:
+         if(self.mAgentChangeList[agentChangeNumber]):
+            if(self.mAgentChangeList[agentChangeNumber].getViablePackages()):
+               self.mAgentChangeList[agentChangeNumber].removeCurrentPackage()
+               self.resolveDeps()
+            else:
+               self.mAgentChangeList[agentChangeNumber].reset()
+               agentChangeNumber+=1
+
       return
 
 class PkgAgent:
    """ Agent that keeps track of the versions for a package given some filters
        and the addition of constraints
    """
-   def init(self, name, constraint_list):
+
    #   Makes a PkgAgent that finds its current package with the version reqs
+   def init(self, name, constraint_list):
       self.mName = name
       self.mBasePackageList = [] # TODO: Sorted by filters and obtained from PkgDB
-      self.mViablePackageList = mBasePackageList
-      self.mCurrentPackage = mViablePackageList[0] #TODO: check for size
+      self.mViablePackageList = self.mBasePackageList
+      if self.mViablePackageList:
+         self.mCurrentPackage = self.mViablePackageList[0]
+      else:
+         self.mCurrentPackage = []
       self.mAgentDependList = [] # Agents that it depends on/needs to update
       self.mBaseConstraints = constraint_list
-      self.mConstraintList = mBaseConstraints
+      self.mConstraintList = self.mBaseConstraints
       self.mConstraintsChanged = True
 
    def constraintsChanged(self):
@@ -136,16 +145,21 @@ class PkgAgent:
             pkg.getCurrentPackageList
       return packageList
 
+   # current pkginfo for me
    def getCurrentPkgInfo(self):
-      return # current pkginfo for me
+      return self.mCurrentPackage
 
+   # Someone else usually places these on me
+   # I keep track of those separately
    def addConstraint(self, constraint):
-      mConstraintsChanged = True
+      self.mConstraintsChanged = True
       self.mConstraintList.append(constraint)
 
    def removeCurrentPackage(self):
-      del mViablePackageList[0]
-      mCurrentPackage = mViablePackageList[0]
+      if self.mViablePackageList:
+         del mViablePackageList[0]
+         if self.mViablePackageList:
+            self.mCurrentPackage = self.mViablePackageList[0]
 
    def update(self, agentVisitedList, agentChangeList):
       if self.name in agentVisitedList:
@@ -160,9 +174,12 @@ class PkgAgent:
       return
 
    def reset(self):
-      self.mViablePackageList = mBasePackageList
-      self.mCurrentPacakge = mViablePackageList[0]
-      self.mConstraintList = mBaseConstraints
+      self.mViablePackageList = self.mBasePackageList
+      if self.mViablePackageList:
+         self.mCurrentPacakge = self.mViablePackageList[0]
+      else:
+         self.mCurrentPackage = []
+      self.mConstraintList = self.mBaseConstraints
       self.mAgentDependList = []
       self.mConstraintsChanged = True
       return
@@ -205,14 +222,6 @@ class PkgDB(object):
       for pkg in self.mPkgInfoList:
          if(name == pkg.getName()):
             return pkg.getVariable(variable)
-
-  #def getVariableRecursively(self, name, variable):
-  #    for pkg in self.mPkgInfoList:
-  #       if(name == pkg.getName()):
-  #          variable_concat=pkg.getVariable(variable)
-  #          requires_dict=self.buildRequiresDict(name)
-  #          for
-
 
    def getInfo(self, name):
       for pkg in self.mPkgInfoList:
@@ -271,9 +280,7 @@ class PkgInfo:
       return self.mName
 
    def evaluate(self):
-      # Currently only evaluates first file
-      # Would need to find right version by parsing
-      # all files and returning the right one
+      # TODO: Do more than pkg-config and parse all same name files
       if not self.mIsEvaluated:
          self.log.debug("Evaluating %s" % self.mName)
          self.mVariableDict= self.parse(self.mFileList[0])
