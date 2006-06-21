@@ -54,15 +54,15 @@ class flagDBG:
       return type._the_instance
 
    def __init__(self):
-      self.mLevel = 3
+      self.mLevel = 2
       self.mLevelList = ["VERBOSE","INFO","WARN","ERROR"]
 
    def setLevel(self, level):
-      if level <= 4:
+      if level <= 3:
          self.mLevel = level
 
    def out(self, level, obj, message):
-      if level <= self.mLevel: 
+      if level >= self.mLevel: 
          print self.mLevelList[level] + ":" + str(obj) + ": " + str(message)
 
 def GetFlagpollVersion():
