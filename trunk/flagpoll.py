@@ -34,7 +34,6 @@ from string import Template
 import sys
 import os
 import glob
-import logging
 
 def GetFlagpollVersion():
    FLAGPOLL_MAJOR_VERSION = 0
@@ -234,7 +233,6 @@ class PkgDB(object):
       return type._the_instance
 
    def __init__(self):
-      self.log = logging.getLogger('flagpoll.PkgDB')
       self.mPkgInfoList = []
       self.PopulatePkgInfoDB()
 
@@ -263,7 +261,6 @@ class PkgInfo:
    """
 
    def __init__(self, name, fileList, version="None"):
-      self.log = logging.getLogger('flagpoll.PkgInfo')
       self.mName = name
       self.mVersion = version
       self.mFileList = fileList
@@ -271,6 +268,7 @@ class PkgInfo:
       self.mVariableDict = {}
 
    def getVariable(self, variable):
+      self.evaluate()
       if self.mVariableDict.has_key(variable):
          return self.mVariableDict[variable]
       else:
@@ -282,7 +280,7 @@ class PkgInfo:
    def evaluate(self):
       # TODO: Do more than pkg-config and parse all same name files
       if not self.mIsEvaluated:
-         self.log.debug("Evaluating %s" % self.mName)
+         #print "Evaluating %s" % self.mName
          self.mVariableDict= self.parse(self.mFileList[0])
          self.mIsEvaluated = True
    
@@ -321,26 +319,10 @@ class PkgInfo:
 class OptionsEvaluator:
    
    def __init__(self):
-      # set up logging
-      self.log = logging.getLogger('flagpoll')
-      self.hdlr = logging.StreamHandler()
-      self.formatter = logging.Formatter('%(name)s %(levelname)s %(message)s')
-      self.hdlr.setFormatter(self.formatter)
-      self.log.addHandler(self.hdlr)
-      self.log.setLevel(logging.INFO)
-
-      logging.addLevelName(1,"ALL")
-      self.outputlog = logging.getLogger('output')
-      self.outhdlr = logging.StreamHandler()
-      self.outformatter = logging.Formatter('%(message)s')
-      self.outhdlr.setFormatter(self.outformatter)
-      self.outputlog.addHandler(self.outhdlr)
-      self.outputlog.setLevel(1)
-
       self.mOptParser = self.GetOptionParser()
       (self.mOptions, self.mArgs) = self.mOptParser.parse_args()
       if self.mOptions.version:
-         self.outputlog("%s.%s.%s" % GetFlagpollVersion())
+         print "%s.%s.%s" % GetFlagpollVersion()
          sys.exit(0)
       if len(self.mArgs) < 1:
          self.mOptParser.print_help()
@@ -350,23 +332,22 @@ class OptionsEvaluator:
    def evaluateArgs(self):
 
       if self.mOptions.debug:
-         self.log.setLevel(logging.DEBUG)
-         self.log.debug(self.mPkgDB.getInfo(self.mArgs[0]))
-         self.log.debug("Ran with extra args: " + str(self.mArgs))
+         print self.mPkgDB.getInfo(self.mArgs[0])
+         print "Ran with extra args: " + str(self.mArgs)
 
-      if not self.mOptions.variable ==  "":
+      if self.mOptions.variable:
          print self.mPkgDB.getVariable(self.mArgs[0], self.mOptions.variable)
 
-      if not self.mOptions.modversion:
+      if self.mOptions.modversion:
          print self.mPkgDB.getVariable(self.mArgs[0], "Version")
          
-      if not self.mOptions.libs:
+      if self.mOptions.libs:
          print self.mPkgDB.getVariableAndDeps(self.mArgs[0], "Libs")
 
-      if not self.mOptions.static:
+      if self.mOptions.static:
          print self.mPkgDB.getVariable(self.mArgs[0], "Static")
 
-      if not self.mOptions.cflags:
+      if self.mOptions.cflags:
          print self.mPkgDB.getVariableAndDeps(self.mArgs[0], "Cflags")
 
 #      if not self.mOptions.list_all:
@@ -408,7 +389,7 @@ class OptionsEvaluator:
 
 
 # GO!
-opt_evaluator = OptionsEvaluator()
 my_dep_system = DepResolutionSystem()
+opt_evaluator = OptionsEvaluator()
 opt_evaluator.evaluateArgs()
 sys.exit(0)
