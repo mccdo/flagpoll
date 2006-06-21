@@ -35,6 +35,36 @@ import sys
 import os
 import glob
 
+class flagDBG:
+#      Logging class is really easy to use
+#      Levels:
+#      0 - VERBOSE
+#      1 - INFO
+#      2 - WARN
+#      3 - ERROR
+
+   VERBOSE=0
+   INFO=1
+   WARN=2
+   ERROR=3
+
+   def __new__(type):
+      if not '_the_instance' in type.__dict__:
+         type._the_instance = object.__new__(type)
+      return type._the_instance
+
+   def __init__(self):
+      self.mLevel = 3
+      self.mLevelList = ["VERBOSE","INFO","WARN","ERROR"]
+
+   def setLevel(self, level):
+      if level <= 4:
+         self.mLevel = level
+
+   def out(self, level, obj, message):
+      if level <= self.mLevel: 
+         print self.mLevelList[level] + ":" + str(obj) + ": " + str(message)
+
 def GetFlagpollVersion():
    FLAGPOLL_MAJOR_VERSION = 0
    FLAGPOLL_MINOR_VERSION = 1
@@ -44,7 +74,11 @@ def GetFlagpollVersion():
 def GetPathList():
    #TODO: expand LD_LIBRARY_PATH and check in there
    #      look in PKG_CONFIG_DIR and in our dir?
-   return ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
+   path_list = ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
+   flagDBG().out(flagDBG.INFO, "GetPathList", "Using path list: " + str(path_list))
+   return path_list
+
+
 
 class DepResolutionSystem(object):
    """ You add PkgAgents with constraints into system and call resolve()
@@ -188,8 +222,9 @@ class Constraint:
        Will be inheireted....?..?
    """
    
-   def __init__(self, constraintString):
+   def __init__(self, pkginfo, constraintString):
       self.mIsSatifisfied = false
+      self.mPkgInfo = pkginfo
       self.mConstraintString = constraintString
       self.mRHS = []
       self.mLHS = []
