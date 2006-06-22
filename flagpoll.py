@@ -80,7 +80,7 @@ class flagDBG:
 
 
 class DepResolutionSystem(object):
-   """ You add PkgAgents with constraints into system and call resolve()
+   """ You add PkgAgents with Filters into system and call resolve()
        you can check for succes by depsSatisfied() and get the list
        of packages that work back by calling getPackages()
    """
@@ -95,7 +95,7 @@ class DepResolutionSystem(object):
       self.mAgents = {}
       self.mFilters = []
       self.mSatisfied = False
-      self.mAgentChangeList = [] # list of those responsible for adding constraints
+      self.mAgentChangeList = [] # list of those responsible for adding Filters
                                  # to agents in higher in the chain than them
                                  # these are the first agents to ask that they pick
                                  # the next best package of them
@@ -111,10 +111,10 @@ class DepResolutionSystem(object):
       # If this comes back empty then there isn't a valid set of packages to use
       return self.mResolvedPackageList
 
-   def checkConstraintsChanged(self):
+   def checkFiltersChanged(self):
       true_false_list = []
       for pkg in self.mResolveAgents:
-         true_false_list.append(pkg.constraintsChanged()) 
+         true_false_list.append(pkg.FiltersChanged()) 
       return True in true_false_list
 
    # Ask mResolveAgents if they are done(they ask sub people) unless they are
@@ -127,7 +127,7 @@ class DepResolutionSystem(object):
          for agent in self.mResolveAgents:
             flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "Updating " + agent.getName())
             agent.update(self.mAgentsVisitedList, self.mAgentChangeList)
-         self.resolveAgentsChanged = checkConstraintsChanged()
+         self.resolveAgentsChanged = checkFiltersChanged()
 
       # Check if the first round through we found something
       # Otherwise we need to start removing packages that aren't viable
@@ -135,7 +135,7 @@ class DepResolutionSystem(object):
       if not mResolvedPacakgeList:
          self.mSatisfied = True
       
-      # remove top of packages that added constraints.
+      # remove top of packages that added Filters.
       # then move on to resolving again
       # remove more if neccesary
       agentChangeNumber = 0
@@ -154,11 +154,11 @@ class DepResolutionSystem(object):
 
 class PkgAgent:
    """ Agent that keeps track of the versions for a package given some filters
-       and the addition of constraints
+       and the addition of Filters
    """
 
    #   Makes a PkgAgent that finds its current package with the version reqs
-   def init(self, name, constraint_list):
+   def init(self, name, Filter_list):
       self.mName = name
       self.mBasePackageList = [] # TODO: Sorted by filters and obtained from PkgDB
       self.mViablePackageList = self.mBasePackageList
@@ -167,15 +167,15 @@ class PkgAgent:
       else:
          self.mCurrentPackage = []
       self.mAgentDependList = [] # Agents that it depends on/needs to update
-      self.mBaseConstraints = constraint_list
-      self.mConstraintList = self.mBaseConstraints
-      self.mConstraintsChanged = True
+      self.mBaseFilters = Filter_list
+      self.mFilterList = self.mBaseFilters
+      self.mFiltersChanged = True
 
    def getName(self):
       return self.mName
 
-   def constraintsChanged(self):
-      return self.mConstraintsChanged # or all its deps too...infinite recurs possible
+   def FiltersChanged(self):
+      return self.mFiltersChanged # or all its deps too...infinite recurs possible
 
    def getCurrentPackageList(self, packageList):
       if self.mName not in packageList:
@@ -190,10 +190,10 @@ class PkgAgent:
 
    # Someone else usually places these on me
    # I keep track of those separately
-   def addConstraint(self, constraint):
-      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.addConstraint", "Adding a constraint to %s" % self.mName)
-      self.mConstraintsChanged = True
-      self.mConstraintList.append(constraint)
+   def addFilter(self, Filter):
+      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.addFilter", "Adding a Filter to %s" % self.mName)
+      self.mFiltersChanged = True
+      self.mFilterList.append(Filter)
 
    def removeCurrentPackage(self):
       flagDBG().out(flagDBG.VERBOSE, "PkgAgent.removeCurrentPackage", "Removing current package of %s" % self.mName)
@@ -205,10 +205,10 @@ class PkgAgent:
    def update(self, agentVisitedList, agentChangeList):
       if self.name in agentVisitedList:
          return
-      if self.mConstraintsChanged:
-         self.mConstraintsChanged = False
+      if self.mFiltersChanged:
+         self.mFiltersChanged = False
          agentVisitedList.append(self.mName)
-         # TODO: checkConstraints and add them
+         # TODO: checkFilters and add them
          # if a pkg is in visitedList then add yourself to agentChangeList
          for pkg in mAgentDependList:
             pkg.update(agentVisitedList, agentChangeList)
@@ -221,20 +221,20 @@ class PkgAgent:
          self.mCurrentPacakge = self.mViablePackageList[0]
       else:
          self.mCurrentPackage = []
-      self.mConstraintList = self.mBaseConstraints
+      self.mFilterList = self.mBaseFilters
       self.mAgentDependList = []
-      self.mConstraintsChanged = True
+      self.mFiltersChanged = True
       return
 
-class Constraint:
-   """ A single constraint that knows how to enforce itself.
+class Filter:
+   """ A single Filter that knows how to filter the list it recieves
        Will be inheireted....?..?
    """
    
-   def __init__(self, pkginfo, constraintString):
+   def __init__(self, pkginfo_list, FilterString):
       self.mIsSatifisfied = false
-      self.mPkgInfo = pkginfo
-      self.mConstraintString = constraintString
+      self.mPkgInfoList = pkginfo_list
+      self.mFilterString = FilterString
       self.mRHS = []
       self.mLHS = []
       self.mLogicSymbol = []
@@ -244,7 +244,7 @@ class Constraint:
       return self.mFilteredList
 
    def check(self):
-      # TODO: check to see if constraint is satisfied
+      # TODO: check to see if Filter is satisfied
       return self.mIsSatisfied
       
    def isSatisfied(self):
