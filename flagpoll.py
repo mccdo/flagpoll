@@ -35,6 +35,19 @@ import sys
 import os
 import glob
 
+def GetFlagpollVersion():
+   FLAGPOLL_MAJOR_VERSION = 0
+   FLAGPOLL_MINOR_VERSION = 1
+   FLAGPOLL_PATCH_VERSION = 1
+   return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
+
+def GetPathList():
+   #TODO: expand LD_LIBRARY_PATH and check in there
+   #      look in PKG_CONFIG_DIR and in our dir?
+   path_list = ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
+   flagDBG().out(flagDBG.INFO, "GetPathList", "Using path list: " + str(path_list))
+   return path_list
+
 class flagDBG:
 #      Logging class is really easy to use
 #      Levels:
@@ -65,20 +78,6 @@ class flagDBG:
       if level >= self.mLevel: 
          print self.mLevelList[level] + ":" + str(obj) + ": " + str(message)
 
-def GetFlagpollVersion():
-   FLAGPOLL_MAJOR_VERSION = 0
-   FLAGPOLL_MINOR_VERSION = 1
-   FLAGPOLL_PATCH_VERSION = 1
-   return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
-
-def GetPathList():
-   #TODO: expand LD_LIBRARY_PATH and check in there
-   #      look in PKG_CONFIG_DIR and in our dir?
-   path_list = ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
-   flagDBG().out(flagDBG.INFO, "GetPathList", "Using path list: " + str(path_list))
-   return path_list
-
-
 
 class DepResolutionSystem(object):
    """ You add PkgAgents with constraints into system and call resolve()
@@ -108,6 +107,7 @@ class DepResolutionSystem(object):
       return self.mSatisfied
 
    def getPackages(self):
+      flagDBG().out(flagDBG.VERBOSE, "DepResSys.getPackages", "List of valid package" + str(self.mResolvedPackageList))
       # If this comes back empty then there isn't a valid set of packages to use
       return self.mResolvedPackageList
 
@@ -125,6 +125,7 @@ class DepResolutionSystem(object):
    def resolveDeps(self):
       while self.resolveAgentsChanged:
          for agent in self.mResolveAgents:
+            flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "Updating " + agent.getName())
             agent.update(self.mAgentsVisitedList, self.mAgentChangeList)
          self.resolveAgentsChanged = checkConstraintsChanged()
 
@@ -141,9 +142,11 @@ class DepResolutionSystem(object):
       while not self.mResolvedPackageList:
          if(self.mAgentChangeList[agentChangeNumber]):
             if(self.mAgentChangeList[agentChangeNumber].getViablePackages()):
+               flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "Removing bad pkg from " + self.mAgentChangeList[agentChangeNumber].getName())
                self.mAgentChangeList[agentChangeNumber].removeCurrentPackage()
                self.resolveDeps()
             else:
+               flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "No combinations.. Resetting " + self.mAgentChangeList[agentChangeNumber].getName())
                self.mAgentChangeList[agentChangeNumber].reset()
                agentChangeNumber+=1
 
@@ -168,6 +171,9 @@ class PkgAgent:
       self.mConstraintList = self.mBaseConstraints
       self.mConstraintsChanged = True
 
+   def getName(self):
+      return self.mName
+
    def constraintsChanged(self):
       return self.mConstraintsChanged # or all its deps too...infinite recurs possible
 
@@ -185,10 +191,12 @@ class PkgAgent:
    # Someone else usually places these on me
    # I keep track of those separately
    def addConstraint(self, constraint):
+      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.addConstraint", "Adding a constraint to %s" % self.mName)
       self.mConstraintsChanged = True
       self.mConstraintList.append(constraint)
 
    def removeCurrentPackage(self):
+      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.removeCurrentPackage", "Removing current package of %s" % self.mName)
       if self.mViablePackageList:
          del mViablePackageList[0]
          if self.mViablePackageList:
@@ -207,6 +215,7 @@ class PkgAgent:
       return
 
    def reset(self):
+      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.reset", "Resetting package: %s" % self.mName)
       self.mViablePackageList = self.mBasePackageList
       if self.mViablePackageList:
          self.mCurrentPacakge = self.mViablePackageList[0]
@@ -248,11 +257,13 @@ class PkgDB(object):
    """
 
    def getVariable(self, name, variable):
+      flagDBG().out(flagDBG.INFO, "PkgDB.getVariable", "Finding " + str(variable) + " in " + str(name))
       for pkg in self.mPkgInfoList:
          if(name == pkg.getName()):
             return pkg.getVariable(variable)
 
    def getVariableAndDeps(self, name, variable):
+      flagDBG().out(flagDBG.INFO, "PkgDB.getVariableAndDeps", "Finding " + str(variable) + " in " + str(name))
       for pkg in self.mPkgInfoList:
          if(name == pkg.getName()):
             return pkg.getVariable(variable)
@@ -315,7 +326,7 @@ class PkgInfo:
    def evaluate(self):
       # TODO: Do more than pkg-config and parse all same name files
       if not self.mIsEvaluated:
-         #print "Evaluating %s" % self.mName
+         flagDBG().out(flagDBG.INFO, "PkgInfo.evaluate", "Evaluating %s" % self.mName)
          self.mVariableDict= self.parse(self.mFileList[0])
          self.mIsEvaluated = True
    
@@ -362,34 +373,33 @@ class OptionsEvaluator:
       if len(self.mArgs) < 1:
          self.mOptParser.print_help()
          sys.exit(1)
-      self.mPkgDB = PkgDB()
 
    def evaluateArgs(self):
 
       if self.mOptions.debug:
-         print self.mPkgDB.getInfo(self.mArgs[0])
+         print PkgDB().getInfo(self.mArgs[0])
          print "Ran with extra args: " + str(self.mArgs)
 
       if self.mOptions.variable:
-         print self.mPkgDB.getVariable(self.mArgs[0], self.mOptions.variable)
+         print PkgDB().getVariable(self.mArgs[0], self.mOptions.variable)
 
       if self.mOptions.modversion:
-         print self.mPkgDB.getVariable(self.mArgs[0], "Version")
+         print PkgDB().getVariable(self.mArgs[0], "Version")
          
       if self.mOptions.libs:
-         print self.mPkgDB.getVariableAndDeps(self.mArgs[0], "Libs")
+         print PkgDB().getVariableAndDeps(self.mArgs[0], "Libs")
 
       if self.mOptions.static:
-         print self.mPkgDB.getVariable(self.mArgs[0], "Static")
+         print PkgDB().getVariable(self.mArgs[0], "Static")
 
       if self.mOptions.cflags:
-         print self.mPkgDB.getVariableAndDeps(self.mArgs[0], "Cflags")
+         print PkgDB().getVariableAndDeps(self.mArgs[0], "Cflags")
 
 #      if not self.mOptions.list_all:
-#        print self.mPkgDB.getPkgList
+#        print PkgDB().getPkgList
 
 #      if not self.mOptions.exists:
-#         print self.mPkgDB.checkExistence(self.mArgs[0])
+#         print PkgDB().checkExistence(self.mArgs[0])
 
 
    def GetOptionParser(self):
