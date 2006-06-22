@@ -35,18 +35,43 @@ import sys
 import os
 import glob
 
-def GetFlagpollVersion():
-   FLAGPOLL_MAJOR_VERSION = 0
-   FLAGPOLL_MINOR_VERSION = 1
-   FLAGPOLL_PATCH_VERSION = 1
-   return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
 
-def GetPathList():
-   #TODO: expand LD_LIBRARY_PATH and check in there
-   #      look in PKG_CONFIG_DIR and in our dir?
-   path_list = ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
-   flagDBG().out(flagDBG.INFO, "GetPathList", "Using path list: " + str(path_list))
-   return path_list
+class Utils:
+   # Holds collection of small utility functions
+   
+   def getFlagpollVersion(self):
+      FLAGPOLL_MAJOR_VERSION = 0
+      FLAGPOLL_MINOR_VERSION = 1
+      FLAGPOLL_PATCH_VERSION = 1
+      return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
+
+   def getPathList(self):
+      #TODO: expand LD_LIBRARY_PATH to 64/32/etc???
+      pkg_cfg_dir = []
+      ld_path = []
+
+      if os.environ.has_key("PKG_CONFIG_DIR"):
+         pkg_cfg_dir = os.environ["PKG_CONFIG_DIR"]
+
+      if os.environ.has_key("LD_LIBRARY_PATH"):
+         ld_path = os.environ["LD_LIBRARY_PATH"]
+         for path in ld_path:
+            path.join("pkgconfig")
+
+      path_list = ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
+      path_list.extend(pkg_cfg_dir)
+      path_list.extend(ld_path)
+      flagDBG().out(flagDBG.INFO, "getPathList", "Using path list: " + str(path_list))
+      return path_list
+
+   def stripDupFlags(self, flag_list):
+      # List is constructed as such ["-L /path", "-L/sfad", "-fpge", "-l pg", "-lpg"
+      # We do slightly dumb stripping though
+      new_list= []
+      for flg in flag_list:
+         if flg not in new_list:
+            new_list.append(flg)
+      
 
 class flagDBG:
 #      Logging class is really easy to use
@@ -285,7 +310,7 @@ class PkgDB(object):
    def BuildPcFileDict(self):
       """ Builds up a dictionary of {name: list of files for name} """
       pc_dict = {}
-      for p in GetPathList():
+      for p in Utils().getPathList():
          glob_list = glob.glob(os.path.join(p, "*.pc")) # List of .pc files in that directory
          for g in glob_list: # Get key name and add file to value list in dictionary
             key = os.path.basename(g)[:-3] # Strip .pc off the filename
@@ -368,7 +393,7 @@ class OptionsEvaluator:
       self.mOptParser = self.GetOptionParser()
       (self.mOptions, self.mArgs) = self.mOptParser.parse_args()
       if self.mOptions.version:
-         print "%s.%s.%s" % GetFlagpollVersion()
+         print "%s.%s.%s" % Utils().getFlagpollVersion()
          sys.exit(0)
       if len(self.mArgs) < 1:
          self.mOptParser.print_help()
