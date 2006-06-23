@@ -119,6 +119,7 @@ class DepResolutionSystem(object):
       self.mResolveAgents = []
       self.mAgents = {}
       self.mFilters = []
+      self.mInvalidPackageList = []
       self.mSatisfied = False
       self.mAgentChangeList = [] # list of those responsible for adding Filters
                                  # to agents in higher in the chain than them
@@ -166,14 +167,18 @@ class DepResolutionSystem(object):
       agentChangeNumber = 0
       while not self.mResolvedPackageList:
          if(self.mAgentChangeList[agentChangeNumber]):
-            if(self.mAgentChangeList[agentChangeNumber].getViablePackages()):
-               flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "Removing bad pkg from " + self.mAgentChangeList[agentChangeNumber].getName())
-               self.mAgentChangeList[agentChangeNumber].removeCurrentPackage()
+            if self.mAgentChangeList[agentChangeNumber] in self.mInvalidPackageList:
+               agentChangeNumber+=1
                self.resolveDeps()
             else:
-               flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "No combinations.. Resetting " + self.mAgentChangeList[agentChangeNumber].getName())
-               self.mAgentChangeList[agentChangeNumber].reset()
-               agentChangeNumber+=1
+               if(self.mAgentChangeList[agentChangeNumber].getViablePackages()):
+                  flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "Removing bad pkg from " + self.mAgentChangeList[agentChangeNumber].getName())
+                  self.mInvalidPackageList.append(self.mAgentChangeList[agentChangeNumber].removeCurrentPackage())
+                  self.resolveDeps()
+               else:
+                  flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "No combinations.. Resetting " + self.mAgentChangeList[agentChangeNumber].getName())
+                  self.mAgentChangeList[agentChangeNumber].reset()
+                  agentChangeNumber+=1
 
       return
 
@@ -223,9 +228,11 @@ class PkgAgent:
    def removeCurrentPackage(self):
       flagDBG().out(flagDBG.VERBOSE, "PkgAgent.removeCurrentPackage", "Removing current package of %s" % self.mName)
       if self.mViablePackageList:
+         ret_val = self.mViablePackageList[0] in self.mBasePackageList
          del mViablePackageList[0]
          if self.mViablePackageList:
             self.mCurrentPackage = self.mViablePackageList[0]
+         return ret_val
 
    def update(self, agentVisitedList, agentChangeList):
       if self.name in agentVisitedList:
