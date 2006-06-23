@@ -31,46 +31,47 @@
 
 from optparse import OptionParser
 from string import Template
-import sys
-import os
-import glob
-
+import sys, os, glob, os.path
+pj = os.path.join
 
 class Utils:
    # Holds collection of small utility functions
    
-   def getFlagpollVersion(self):
+   def getFlagpollVersion():
       FLAGPOLL_MAJOR_VERSION = 0
       FLAGPOLL_MINOR_VERSION = 1
       FLAGPOLL_PATCH_VERSION = 1
       return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
+   getFlagpollVersion = staticmethod(getFlagpollVersion)
 
-   def getPathList(self):
+   def getPathList():
       #TODO: expand LD_LIBRARY_PATH to 64/32/etc???
       pkg_cfg_dir = []
       ld_path = []
 
       if os.environ.has_key("PKG_CONFIG_DIR"):
-         pkg_cfg_dir = os.environ["PKG_CONFIG_DIR"]
+         pkg_cfg_dir = os.environ["PKG_CONFIG_DIR"].split(os.pathsep)
 
       if os.environ.has_key("LD_LIBRARY_PATH"):
-         ld_path = os.environ["LD_LIBRARY_PATH"]
-         for path in ld_path:
-            path.join("pkgconfig")
+         ld_path = os.environ["LD_LIBRARY_PATH"].split(os.pathsep)
+         ld_path = [pj(p,'pkgconfig') for p in ld_path if os.path.exists(p)]         
 
       path_list = ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
+      path_list = [p for p in path_list if os.path.exists(p)]
       path_list.extend(pkg_cfg_dir)
       path_list.extend(ld_path)
       flagDBG().out(flagDBG.INFO, "getPathList", "Using path list: " + str(path_list))
       return path_list
+   getPathList = staticmethod(getPathList)
 
-   def stripDupFlags(self, flag_list):
+   def stripDupFlags(flag_list):
       # List is constructed as such ["-L /path", "-L/sfad", "-fpge", "-l pg", "-lpg"
       # We do slightly dumb stripping though
       new_list= []
       for flg in flag_list:
          if flg not in new_list:
             new_list.append(flg)
+   stripDupFlags = staticmethod(stripDupFlags)            
       
 
 class flagDBG:
@@ -116,8 +117,7 @@ class DepResolutionSystem(object):
       return type._the_instance
 
    def __init__(self):
-      self.mResolveAgents = []
-      self.mAgents = {}
+      self.mResolveAgents = []      
       self.mFilters = []
       self.mInvalidPackageList = []
       self.mSatisfied = False
@@ -138,10 +138,7 @@ class DepResolutionSystem(object):
       return self.mResolvedPackageList
 
    def checkFiltersChanged(self):
-      true_false_list = []
-      for pkg in self.mResolveAgents:
-         true_false_list.append(pkg.FiltersChanged()) 
-      return True in true_false_list
+      return True in [pkg.FiltersChanged() for pkg in self.mResolveAgents]      
 
    # Ask mResolveAgents if they are done(they ask sub people) unless they are
    # really above you in the walk
@@ -149,6 +146,7 @@ class DepResolutionSystem(object):
    # at the end ask for pkglist..if it comes back empty then we don't
    # have a usable configuration for those packages
    def resolveDeps(self):
+      self.resolveAgentsChanged = False
       while self.resolveAgentsChanged:
          for agent in self.mResolveAgents:
             flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "Updating " + agent.getName())
@@ -158,8 +156,7 @@ class DepResolutionSystem(object):
       # Check if the first round through we found something
       # Otherwise we need to start removing packages that aren't viable
       # during the loop
-      if not mResolvedPacakgeList:
-         self.mSatisfied = True
+      self.mSatisfied = (len(self.mResolvedPackageList) != 0)      
       
       # remove top of packages that added Filters.
       # then move on to resolving again
@@ -263,6 +260,32 @@ class Filter:
        Will be inheireted....?..?
    """
    
+   def __init__(self, variableName, testCallable):
+      self.mVarName = variableName
+      self.testCallable = testCallable
+      
+   def filter(self, pkg_info_list):
+      ret_pkg_list = []
+      
+      # Filter first
+      for pkg in pkg_info_list:
+         var = pkg.getVariable(variableName)
+         if testCallable(var):
+            ret_pkg_list.append(pkg)
+            
+      # Now sort
+      ret_pkg_list.sort(lambda lhs,rhs: cmp(lhs.getVariable(variableName),
+                                            rhs.getVariable(variableName)))
+      
+      return ret_pkg_list
+
+requires: qt == 4.5
+
+Filter("Version", lambda x: x == "4.5")
+Filter("Version", lambda x: x <= "4.5")
+Filter("Version", lambda x: x <= "4.5")
+   
+   
    def __init__(self, pkginfo_list, FilterString):
       self.mIsSatifisfied = false
       self.mPkgInfoList = pkginfo_list
@@ -287,51 +310,44 @@ class PkgDB(object):
        Is in charge of holding a list of PkgInfo's that contain info
        about the package.
    """
-
-   def getVariable(self, name, variable):
-      flagDBG().out(flagDBG.INFO, "PkgDB.getVariable", "Finding " + str(variable) + " in " + str(name))
-      for pkg in self.mPkgInfoList:
-         if(name == pkg.getName()):
-            return pkg.getVariable(variable)
-
-   def getVariableAndDeps(self, name, variable):
-      flagDBG().out(flagDBG.INFO, "PkgDB.getVariableAndDeps", "Finding " + str(variable) + " in " + str(name))
-      for pkg in self.mPkgInfoList:
-         if(name == pkg.getName()):
-            return pkg.getVariable(variable)
-
-   def getInfo(self, name):
-      for pkg in self.mPkgInfoList:
-         if(name == pkg.getName()):
-            return pkg.getInfo()
+   def __init__(self):
+      self.mPkgInfos = {}           # {pkg_name: List of package infos}
+      self.populatePkgInfoDB()
 
    def __new__(type):
       if not '_the_instance' in type.__dict__:
          type._the_instance = object.__new__(type)
       return type._the_instance
+      
+   def getVariable(self, name, variable):
+      flagDBG().out(flagDBG.INFO, "PkgDB.getVariable", "Finding " + str(variable) + " in " + str(name))
+      if self.mPkgInfos.has_key(name):
+         return self.mPkgInfos[name][0].getVariable(variable)
 
-   def __init__(self):
-      self.mPkgInfoList = []
-      self.PopulatePkgInfoDB()
+   def getVariableAndDeps(self, name, variable):
+      flagDBG().out(flagDBG.INFO, "PkgDB.getVariableAndDeps", "Finding " + str(variable) + " in " + str(name))
+      if self.mPkgInfos.has_key(name):
+         return self.mPkgInfos[name][0].getVariable(variable)      
 
-   def BuildPcFileDict(self):
+   def getInfo(self, name):
+      if self.mPkgInfos.has_key(name):
+         return self.mPkgInfos[name][0].getInfo()      
+
+   def buildPcFileDict(self):
       """ Builds up a dictionary of {name: list of files for name} """
       pc_dict = {}
-      for p in Utils().getPathList():
+      for p in Utils.getPathList():
          glob_list = glob.glob(os.path.join(p, "*.pc")) # List of .pc files in that directory
          for g in glob_list: # Get key name and add file to value list in dictionary
-            key = os.path.basename(g)[:-3] # Strip .pc off the filename
-            if pc_dict.has_key(key):
-               pc_dict[key].append(g)
-            else:
-               pc_dict[key]=[g]
+            key = os.path.basename(g).rstrip(".pc")   # Strip .pc off the filename
+            pc_dict.setdefault(key,[]).append(g)            
       
       return pc_dict # { "key", [ "list", "of", "corresponding", "pc", "files"] }
 
-   def PopulatePkgInfoDB(self):
-      dict_to_pop_from = self.BuildPcFileDict()
-      for pkg in dict_to_pop_from:
-         self.mPkgInfoList.append(PkgInfo(str(pkg), dict_to_pop_from[pkg]))
+   def populatePkgInfoDB(self):
+      dict_to_pop_from = self.buildPcFileDict()
+      for (pkg,files) in dict_to_pop_from.iteritems():
+         self.mPkgInfos.setdefault(pkg,[]).append(PkgInfo(pkg, files))
 
 class PkgInfo:
    """ Holds the information for a package file on the system. These however
@@ -347,10 +363,7 @@ class PkgInfo:
 
    def getVariable(self, variable):
       self.evaluate()
-      if self.mVariableDict.has_key(variable):
-         return self.mVariableDict[variable]
-      else:
-         return ""
+      return self.mVariableDict.get(variable,"")      
 
    def getName(self):
       return self.mName
@@ -400,7 +413,7 @@ class OptionsEvaluator:
       self.mOptParser = self.GetOptionParser()
       (self.mOptions, self.mArgs) = self.mOptParser.parse_args()
       if self.mOptions.version:
-         print "%s.%s.%s" % Utils().getFlagpollVersion()
+         print "%s.%s.%s" % Utils.getFlagpollVersion()
          sys.exit(0)
       if len(self.mArgs) < 1:
          self.mOptParser.print_help()
@@ -436,32 +449,58 @@ class OptionsEvaluator:
 
    def GetOptionParser(self):
       parser = OptionParser()
-      parser.add_option("--modversion", action="store_true", dest="modversion", help="output version for package")
-      parser.add_option("--version", action="store_true", dest="version", help="output version of pkg-config")
-      parser.add_option("--libs", action="store_true", dest="libs", help="output all linker flags")
-      parser.add_option("--static", action="store_true", dest="static", help="output linker flags for static linking")
-      parser.add_option("--short-errors", action="store_true", dest="short_errors", help="print short errors")
-      parser.add_option("--libs-only-l", action="store_true", dest="libs_only_l", help="output -l flags")
-      parser.add_option("--libs-only-other", action="store_true", dest="libs_only_other", help="output other libs (e.g. -pthread)")
-      parser.add_option("--libs-only-L", action="store_true", dest="libs_only_L", help="output -L flags")
-      parser.add_option("--cflags", action="store_true", dest="cflags", help="output all pre-processor and compiler flags")
-      parser.add_option("--cflags-only-I", action="store_true", dest="cflags_only_I", help="output -I flags")
-      parser.add_option("--cflags-only-other ", action="store_true", dest="cflags_only_other", help="output cflags not covered by the cflags-only-I option")
-      parser.add_option("--exists", action="store_true", dest="exists", help="return 0 if the module(s) exist")
-      parser.add_option("--list-all", action="store_true", dest="list_all", help="list all known packages")
-      parser.add_option("--debug", action="store_true", dest="debug", help="show verbose debug information")
-      parser.add_option("--print-errors", action="store_true", dest="print_errors", help="show verbose information about missing or conflicting packages")
-      parser.add_option("--silence-errors", action="store_true", dest="silence_errors", help="show no information about missing or conflicting packages")
-      parser.add_option("--uninstalled", action="store_true", dest="uninstalled", help="return 0 if the uninstalled version of one or more module(s) or their dependencies will be used")
-      parser.add_option("--errors-to-stdout", action="store_true", dest="errors_to_stdout", help="print errors from --print-errors to stdout not stderr")
-      parser.add_option("--print-provides", action="store_true", dest="print_provides", help="print which packages the package provides")
-      parser.add_option("--print-requires", action="store_true", dest="print_requires", help="print which packages the package requires")
-      parser.add_option("--atleast-version", dest="atleast_version", help="return 0 if the module is at least version VERSION")
-      parser.add_option("--exact-version", dest="exact_version", help="return 0 if the module is exactly version VERSION")
-      parser.add_option("--max-version", dest="max_version", help="return 0 if the module is at no newer than version VERSION")
-      parser.add_option("--atleast-pkgconfig-version=VERSION", dest="atleast_pkgconfig_version", help="require given version of pkg-config")
-      parser.add_option("--variable", dest="variable", help="get the value of a variable")
-      parser.add_option("--define-variable", dest="define_variable", help="set the value of a variable")
+      parser.add_option("--modversion", action="store_true", dest="modversion", 
+                        help="output version for package")
+      parser.add_option("--version", action="store_true", dest="version", 
+                        help="output version of pkg-config")
+      parser.add_option("--libs", action="store_true", dest="libs", 
+                        help="output all linker flags")
+      parser.add_option("--static", action="store_true", dest="static", 
+                        help="output linker flags for static linking")
+      parser.add_option("--short-errors", action="store_true", dest="short_errors", 
+                        help="print short errors")
+      parser.add_option("--libs-only-l", action="store_true", dest="libs_only_l", 
+                        help="output -l flags")
+      parser.add_option("--libs-only-other", action="store_true", dest="libs_only_other", 
+                        help="output other libs (e.g. -pthread)")
+      parser.add_option("--libs-only-L", action="store_true", dest="libs_only_L", 
+                        help="output -L flags")
+      parser.add_option("--cflags", action="store_true", dest="cflags", 
+                        help="output all pre-processor and compiler flags")
+      parser.add_option("--cflags-only-I", action="store_true", dest="cflags_only_I", 
+                        help="output -I flags")
+      parser.add_option("--cflags-only-other ", action="store_true", dest="cflags_only_other", 
+                        help="output cflags not covered by the cflags-only-I option")
+      parser.add_option("--exists", action="store_true", dest="exists", 
+                        help="return 0 if the module(s) exist")
+      parser.add_option("--list-all", action="store_true", dest="list_all", 
+                        help="list all known packages")
+      parser.add_option("--debug", action="store_true", dest="debug", 
+                        help="show verbose debug information")
+      parser.add_option("--print-errors", action="store_true", dest="print_errors", 
+                        help="show verbose information about missing or conflicting packages")
+      parser.add_option("--silence-errors", action="store_true", dest="silence_errors", 
+                        help="show no information about missing or conflicting packages")
+      parser.add_option("--uninstalled", action="store_true", dest="uninstalled", 
+                        help="return 0 if the uninstalled version of one or more module(s) or their dependencies will be used")
+      parser.add_option("--errors-to-stdout", action="store_true", dest="errors_to_stdout", 
+                        help="print errors from --print-errors to stdout not stderr")
+      parser.add_option("--print-provides", action="store_true", dest="print_provides", 
+                        help="print which packages the package provides")
+      parser.add_option("--print-requires", action="store_true", dest="print_requires", 
+                        help="print which packages the package requires")
+      parser.add_option("--atleast-version", dest="atleast_version", 
+                        help="return 0 if the module is at least version VERSION")
+      parser.add_option("--exact-version", dest="exact_version", 
+                        help="return 0 if the module is exactly version VERSION")
+      parser.add_option("--max-version", dest="max_version", 
+                        help="return 0 if the module is at no newer than version VERSION")
+      parser.add_option("--atleast-pkgconfig-version=VERSION", dest="atleast_pkgconfig_version", 
+                        help="require given version of pkg-config")
+      parser.add_option("--variable", dest="variable", 
+                        help="get the value of a variable")
+      parser.add_option("--define-variable", dest="define_variable", 
+                        help="set the value of a variable")
       return parser
 
 
