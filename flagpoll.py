@@ -185,31 +185,41 @@ class PkgAgent:
    """
 
    #   Makes a PkgAgent that finds its current package with the version reqs
-   def init(self, name, Filter_list):
+   def init(self, name):
       self.mName = name
-      self.mBasePackageList = [] # TODO: Sorted by filters and obtained from PkgDB
-      self.mViablePackageList = self.mBasePackageList
+      self.mFilterList = DepResolutionSystem().getFilters()
+      self.mBasePackageList = PkgDB.getPkgInfos(name)
+      for filt in self.mFilterList:
+         filt.filter(self.mBasePackageList)
+
+      self.mViablePackageList = self.mBasePackageList.copy()
       if self.mViablePackageList:
          self.mCurrentPackage = self.mViablePackageList[0]
       else:
          self.mCurrentPackage = []
       self.mAgentDependList = [] # Agents that it depends on/needs to update
-      self.mBaseFilters = Filter_list
-      self.mFilterList = self.mBaseFilters
+      #TODO Make depends up and add filters to them in here or in update
       self.mFiltersChanged = True
 
    def getName(self):
       return self.mName
 
-   def FiltersChanged(self):
-      return self.mFiltersChanged # or all its deps too...infinite recurs possible
-
-   def getCurrentPackageList(self, packageList):
+   def FiltersChanged(self,packageList):
+      tf_list = self.mFiltersChanged
       if self.mName not in packageList:
          packageList.append(self.mName)
          for pkg in self.mAgentDependList:
-            pkg.getCurrentPackageList
-      return packageList
+            tf_list.append(pkg.FiltersChanged(packageList)
+      return True in tf_list
+
+   def getCurrentPackageList(self, packageList):
+      pkgs = []
+      if self.mName not in packageList:
+         pkgs = self.mCurrentPackage
+         packageList.append(self.mName)
+         for pkg in self.mAgentDependList:
+            pkgs.extend(pkg.getCurrentPackageList())
+      return pkgs
 
    # current pkginfo for me
    def getCurrentPkgInfo(self):
@@ -234,14 +244,28 @@ class PkgAgent:
    def update(self, agentVisitedList, agentChangeList):
       if self.name in agentVisitedList:
          return
+
+      agentVisitedList.append(self.mName)
+
       if self.mFiltersChanged:
          self.mFiltersChanged = False
-         agentVisitedList.append(self.mName)
-         # TODO: checkFilters and add them
-         # if a pkg is in visitedList then add yourself to agentChangeList
-         for pkg in mAgentDependList:
-            pkg.update(agentVisitedList, agentChangeList)
+         self.updateFilters()
+
+      # TODO: checkFilters and add them
+      # if a pkg is in visitedList then add yourself to agentChangeList
+      
+      for pkg in mAgentDependList:
+         pkg.update(agentVisitedList, agentChangeList)
       return
+
+   def updateFilters(self):
+      for filt in self.mFilterList:
+         filt.filter(self.mViablePackageList)
+      if self.mViablePackageList[0]:
+         self.mCurrentPackage = self.mViablePackageList[0]
+      else:
+         self.mCurrentPackage = []
+      
 
    def reset(self):
       flagDBG().out(flagDBG.VERBOSE, "PkgAgent.reset", "Resetting package: %s" % self.mName)
@@ -279,11 +303,11 @@ class Filter:
       
       return ret_pkg_list
 
-requires: qt == 4.5
+#requires: qt == 4.5
 
-Filter("Version", lambda x: x == "4.5")
-Filter("Version", lambda x: x <= "4.5")
-Filter("Version", lambda x: x <= "4.5")
+#Filter("Version", lambda x: x == "4.5")
+#Filter("Version", lambda x: x <= "4.5")
+#Filter("Version", lambda x: x <= "4.5")
    
    
    def __init__(self, pkginfo_list, FilterString):
