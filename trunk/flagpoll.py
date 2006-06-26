@@ -157,7 +157,7 @@ class DepResolutionSystem(object):
       
 
    def getPackages(self):
-      flagDBG().out(flagDBG.VERBOSE, "DepResSys.getPackages", "List of valid package" + str(self.mResolvedPackageList))
+      flagDBG().out(flagDBG.VERBOSE, "DepResSys.getPackages", "List of valid package" + str([pkg.getName() for pkg in self.mResolvedPackageList]))
       # If this comes back empty then there isn't a valid set of packages to use
       self.updateResolvedPackages()
       return self.mResolvedPackageList
@@ -215,6 +215,7 @@ class PkgAgent:
    #   Makes a PkgAgent that finds its current package with the version reqs
    def __init__(self, name):
       self.mName = name
+      flagDBG().out(flagDBG.VERBOSE, "PkgAgent", "Created:" + str(self.mName))
       self.mFilterList = DepResolutionSystem().getFilters()
       self.mBasePackageList = PkgDB().getPkgInfos(name)
       for filt in self.mFilterList:
@@ -234,12 +235,14 @@ class PkgAgent:
 
    #Filter("Version", lambda x: x == "4.5")
    def makeDependList(self):
+      dep_list = []
       if self.mCurrentPackage:
          req_string = self.mCurrentPackage.getVariable("Requires")
          req_string_list = req_string.split(' ')
          i = 0
-         dep_list = []
-         while len(req_string_list) <= i:
+         if len(req_string_list) == 0:
+            i=1
+         while len(req_string_list) > i:
             if PkgDB().exists(req_string_list[i]):
                new_filter = []
                new_agent = PkgAgent(req_string_list[i])
@@ -260,8 +263,8 @@ class PkgAgent:
                   new_agent.addFilter(new_filter)
             else:
                i+=1
-
-         self.mAgentDependList = dep_list
+         flagDBG().out(flagDBG.VERBOSE, "PkgAgent.makeDependList", "List is:" + str([pkg.getName() for pkg in dep_list]))
+      self.mAgentDependList = dep_list
 
    def filtersChanged(self,packageList):
       tf_list = self.mFiltersChanged
@@ -278,7 +281,7 @@ class PkgAgent:
          pkgs.append(self.mCurrentPackage)
          packageList.append(self.mName)
          for pkg in self.mAgentDependList:
-            pkgs.extend(pkg.getCurrentPackageList())
+            pkgs.extend(pkg.getCurrentPackageList(packageList))
             print pkg.getName()
       return pkgs
 
@@ -401,7 +404,11 @@ class PkgDB(object):
          agent = PkgAgent(name)
          dep_res.addAgent(agent)
          dep_res.resolveDeps()
-         return dep_res.getPackages()
+         pkgs = dep_res.getPackages()
+         var_list = []
+         for pkg in pkgs:
+           var_list.append(pkg.getVariable(name))
+         return var_list
 
    def getPkgInfos(self, name):
       if self.mPkgInfos.has_key(name):
