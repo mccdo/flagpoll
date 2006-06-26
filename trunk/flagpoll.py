@@ -146,7 +146,7 @@ class DepResolutionSystem(object):
       return self.mResolvedPackageList
 
    def checkFiltersChanged(self):
-      return True in [pkg.FiltersChanged() for pkg in self.mResolveAgents] 
+      return True in [pkg.filtersChanged() for pkg in self.mResolveAgents] 
 
    def resolveHelper(self):
       self.resolveAgentsChanged = False
@@ -241,12 +241,12 @@ class PkgAgent:
                   new_agent.addFilter(new_filter)
          self.mAgentDependList = dep_list
 
-   def FiltersChanged(self,packageList):
+   def filtersChanged(self,packageList):
       tf_list = self.mFiltersChanged
       if self.mName not in packageList:
          packageList.append(self.mName)
          for pkg in self.mAgentDependList:
-            tf_list.append(pkg.FiltersChanged(packageList)
+            tf_list.append(pkg.filtersChanged(packageList)
       return True in tf_list
 
    def getCurrentPackageList(self, packageList):
@@ -257,7 +257,6 @@ class PkgAgent:
          for pkg in self.mAgentDependList:
             pkgs.extend(pkg.getCurrentPackageList())
       return pkgs
-
 
    # current pkginfo for me
    def getCurrentPkgInfo(self):
