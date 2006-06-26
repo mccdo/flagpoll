@@ -237,7 +237,7 @@ class PkgAgent:
          req_string_list = req_string.split(' ')
          i = 0
          dep_list = []
-         while req_string_list[i]:
+         while len(req_string_list) >= i:
             if PkgDB().exists(req_string_list[i]):
                new_filter = []
                new_agent = PkgAgent(req_string_list[i])
@@ -248,12 +248,16 @@ class PkgAgent:
                      new_filter = Filter("Version", lambda x: x <= req_string_list[i+2])
                   elif req_string_list[i+1] == ">=":
                      new_filter = Filter("Version", lambda x: x >= req_string_list[i+2])
+                  else:
+                     i+=1
                else:
                   i+=1
                dep_list.append(new_agent)
                if new_filter:
                   i+=3
                   new_agent.addFilter(new_filter)
+            else:
+               i+=1
 
          self.mAgentDependList = dep_list
 
