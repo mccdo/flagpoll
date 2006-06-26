@@ -132,13 +132,29 @@ class DepResolutionSystem(object):
    def isSatisfied(self):
       return self.mSatisfied
 
+   def updateResolvedPackages(self):
+      pkg_list = []
+      for agent in self.ResolveAgents:
+         pkg_list.extend(agent.getCurrentPackageList())
+      self.mResolvedPackageList = pkg_list
+      
+
    def getPackages(self):
       flagDBG().out(flagDBG.VERBOSE, "DepResSys.getPackages", "List of valid package" + str(self.mResolvedPackageList))
       # If this comes back empty then there isn't a valid set of packages to use
+      self.updateResolvePackages()
       return self.mResolvedPackageList
 
    def checkFiltersChanged(self):
-      return True in [pkg.FiltersChanged() for pkg in self.mResolveAgents]      
+      return True in [pkg.FiltersChanged() for pkg in self.mResolveAgents] 
+
+   def resolveHelper(self):
+      self.resolveAgentsChanged = False
+      while self.resolveAgentsChanged:
+         for agent in self.mResolveAgents:
+            flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveHelper", "Updating " + agent.getName())
+            agent.update(self.mAgentsVisitedList, self.mAgentChangeList)
+         self.resolveAgentsChanged = self.checkFiltersChanged()
 
    # Ask mResolveAgents if they are done(they ask sub people) unless they are
    # really above you in the walk
@@ -146,13 +162,8 @@ class DepResolutionSystem(object):
    # at the end ask for pkglist..if it comes back empty then we don't
    # have a usable configuration for those packages
    def resolveDeps(self):
-      self.resolveAgentsChanged = False
-      while self.resolveAgentsChanged:
-         for agent in self.mResolveAgents:
-            flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "Updating " + agent.getName())
-            agent.update(self.mAgentsVisitedList, self.mAgentChangeList)
-         self.resolveAgentsChanged = checkFiltersChanged()
-
+      self.resolveHelper() 
+      self.updateResolvedPackages()
       # Check if the first round through we found something
       # Otherwise we need to start removing packages that aren't viable
       # during the loop
@@ -166,17 +177,17 @@ class DepResolutionSystem(object):
          if(self.mAgentChangeList[agentChangeNumber]):
             if self.mAgentChangeList[agentChangeNumber] in self.mInvalidPackageList:
                agentChangeNumber+=1
-               self.resolveDeps()
             else:
                if(self.mAgentChangeList[agentChangeNumber].getViablePackages()):
                   flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "Removing bad pkg from " + self.mAgentChangeList[agentChangeNumber].getName())
                   self.mInvalidPackageList.append(self.mAgentChangeList[agentChangeNumber].removeCurrentPackage())
-                  self.resolveDeps()
                else:
                   flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "No combinations.. Resetting " + self.mAgentChangeList[agentChangeNumber].getName())
                   self.mAgentChangeList[agentChangeNumber].reset()
                   agentChangeNumber+=1
-
+         self.resolveHelper() 
+         self.updateResolvedPackages()
+         self.mSatisfied = (len(self.mResolvedPackageList) != 0)      
       return
 
 class PkgAgent:
@@ -198,11 +209,37 @@ class PkgAgent:
       else:
          self.mCurrentPackage = []
       self.mAgentDependList = [] # Agents that it depends on/needs to update
-      #TODO Make depends up and add filters to them in here or in update
+      self.makeDependList()
       self.mFiltersChanged = True
 
    def getName(self):
       return self.mName
+
+#Filter("Version", lambda x: x == "4.5")
+   def makeDependList(self):
+      if self.mCurrentPackage:
+         req_string = self.mCurrentPackage.getVariable("Requires")
+         req_string_list = req_string.split(' ')
+         x = True
+         i = 0
+         dep_list = []
+         while x:
+            if PkgDB().exists(req_string_list[i]):
+               new_filter = []
+               new_agent = PkgAgent(req_string_list[i])
+               if req_string_list[i+1] == "=":
+                  new_filter = Filter("Version", lambda x: x == req_string_list[i+2])
+               else if req_string_list[i+1] == "<=":
+                  new_filter = Filter("Version", lambda x: x <= req_string_list[i+2])
+               else if req_string_list[i+1] == ">=":
+                  new_filter = Filter("Version", lambda x: x >= req_string_list[i+2])
+               else:
+                  x+=1
+               dep_list.append(new_agent)
+               if new_filter:
+                  x+=3
+                  new_agent.addFilter(new_filter)
+         self.mAgentDependList = dep_list
 
    def FiltersChanged(self,packageList):
       tf_list = self.mFiltersChanged
@@ -220,6 +257,7 @@ class PkgAgent:
          for pkg in self.mAgentDependList:
             pkgs.extend(pkg.getCurrentPackageList())
       return pkgs
+
 
    # current pkginfo for me
    def getCurrentPkgInfo(self):
@@ -305,7 +343,6 @@ class Filter:
 
 #requires: qt == 4.5
 
-#Filter("Version", lambda x: x == "4.5")
 #Filter("Version", lambda x: x <= "4.5")
 #Filter("Version", lambda x: x <= "4.5")
    
