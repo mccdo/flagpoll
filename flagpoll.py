@@ -149,15 +149,17 @@ class DepResolutionSystem(object):
 
    def updateResolvedPackages(self):
       pkg_list = []
+      agent_list = []
       for agent in self.mResolveAgents:
-         pkg_list.extend(agent.getCurrentPackageList(pkg_list))
+         list = agent.getCurrentPackageList(agent_list)
+         pkg_list.extend(list)
       self.mResolvedPackageList = pkg_list
       
 
    def getPackages(self):
       flagDBG().out(flagDBG.VERBOSE, "DepResSys.getPackages", "List of valid package" + str(self.mResolvedPackageList))
       # If this comes back empty then there isn't a valid set of packages to use
-      self.updateResolvePackages()
+      self.updateResolvedPackages()
       return self.mResolvedPackageList
 
    def checkFiltersChanged(self):
@@ -237,7 +239,7 @@ class PkgAgent:
          req_string_list = req_string.split(' ')
          i = 0
          dep_list = []
-         while len(req_string_list) >= i:
+         while len(req_string_list) <= i:
             if PkgDB().exists(req_string_list[i]):
                new_filter = []
                new_agent = PkgAgent(req_string_list[i])
@@ -272,10 +274,12 @@ class PkgAgent:
    def getCurrentPackageList(self, packageList):
       pkgs = []
       if self.mName not in packageList:
-         pkgs = self.mCurrentPackage
+         print self.mName
+         pkgs.append(self.mCurrentPackage)
          packageList.append(self.mName)
          for pkg in self.mAgentDependList:
             pkgs.extend(pkg.getCurrentPackageList())
+            print pkg.getName()
       return pkgs
 
    # current pkginfo for me
@@ -397,6 +401,7 @@ class PkgDB(object):
          agent = PkgAgent(name)
          dep_res.addAgent(agent)
          dep_res.resolveDeps()
+         return dep_res.getPackages()
 
    def getPkgInfos(self, name):
       if self.mPkgInfos.has_key(name):
