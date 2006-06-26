@@ -31,7 +31,7 @@
 
 from optparse import OptionParser
 from string import Template
-import sys, os, glob, os.path
+import sys, os, glob, os.path, copy
 pj = os.path.join
 
 class Utils:
@@ -74,7 +74,7 @@ class Utils:
    stripDupFlags = staticmethod(stripDupFlags)            
       
 
-class flagDBG:
+class flagDBG(object):
 #      Logging class is really easy to use
 #      Levels:
 #      0 - VERBOSE
@@ -87,13 +87,18 @@ class flagDBG:
    WARN=2
    ERROR=3
 
+   __initialized = False
+
    def __new__(type):
       if not '_the_instance' in type.__dict__:
          type._the_instance = object.__new__(type)
       return type._the_instance
 
    def __init__(self):
-      self.mLevel = 2
+      if flagDBG.__initialized:
+         return
+      flagDBG.__initialized = True
+      self.mLevel = self.WARN
       self.mLevelList = ["VERBOSE","INFO","WARN","ERROR"]
 
    def setLevel(self, level):
@@ -111,12 +116,17 @@ class DepResolutionSystem(object):
        of packages that work back by calling getPackages()
    """
 
+   __initialized = False
+   
    def __new__(type):
       if not '_the_instance' in type.__dict__:
          type._the_instance = object.__new__(type)
       return type._the_instance
 
    def __init__(self):
+      if DepResolutionSystem.__initialized:
+         return
+      DepResolutionSystem.__initialized = True
       self.mResolveAgents = []      
       self.mFilters = []
       self.mInvalidPackageList = []
@@ -128,14 +138,19 @@ class DepResolutionSystem(object):
       self.mAgentsVisitedList = [] # list of Agents that have been visited
       self.mResolvedPackageList = [] # list that is generated when deps are satified
 
+   def getFilters(self):
+      return self.mFilters
+
+   def addAgent(self, agent):
+      self.mResolveAgents.append(agent)
 
    def isSatisfied(self):
       return self.mSatisfied
 
    def updateResolvedPackages(self):
       pkg_list = []
-      for agent in self.ResolveAgents:
-         pkg_list.extend(agent.getCurrentPackageList())
+      for agent in self.mResolveAgents:
+         pkg_list.extend(agent.getCurrentPackageList(pkg_list))
       self.mResolvedPackageList = pkg_list
       
 
@@ -196,14 +211,14 @@ class PkgAgent:
    """
 
    #   Makes a PkgAgent that finds its current package with the version reqs
-   def init(self, name):
+   def __init__(self, name):
       self.mName = name
       self.mFilterList = DepResolutionSystem().getFilters()
-      self.mBasePackageList = PkgDB.getPkgInfos(name)
+      self.mBasePackageList = PkgDB().getPkgInfos(name)
       for filt in self.mFilterList:
          filt.filter(self.mBasePackageList)
 
-      self.mViablePackageList = self.mBasePackageList.copy()
+      self.mViablePackageList = copy.deepcopy(self.mBasePackageList)
       if self.mViablePackageList:
          self.mCurrentPackage = self.mViablePackageList[0]
       else:
@@ -215,30 +230,31 @@ class PkgAgent:
    def getName(self):
       return self.mName
 
-#Filter("Version", lambda x: x == "4.5")
+   #Filter("Version", lambda x: x == "4.5")
    def makeDependList(self):
       if self.mCurrentPackage:
          req_string = self.mCurrentPackage.getVariable("Requires")
          req_string_list = req_string.split(' ')
-         x = True
          i = 0
          dep_list = []
-         while x:
+         while req_string_list[i]:
             if PkgDB().exists(req_string_list[i]):
                new_filter = []
                new_agent = PkgAgent(req_string_list[i])
-               if req_string_list[i+1] == "=":
-                  new_filter = Filter("Version", lambda x: x == req_string_list[i+2])
-               else if req_string_list[i+1] == "<=":
-                  new_filter = Filter("Version", lambda x: x <= req_string_list[i+2])
-               else if req_string_list[i+1] == ">=":
-                  new_filter = Filter("Version", lambda x: x >= req_string_list[i+2])
+               if len(req_string_list) > i+1:
+                  if req_string_list[i+1] == "=":
+                     new_filter = Filter("Version", lambda x: x == req_string_list[i+2])
+                  elif req_string_list[i+1] == "<=":
+                     new_filter = Filter("Version", lambda x: x <= req_string_list[i+2])
+                  elif req_string_list[i+1] == ">=":
+                     new_filter = Filter("Version", lambda x: x >= req_string_list[i+2])
                else:
-                  x+=1
+                  i+=1
                dep_list.append(new_agent)
                if new_filter:
-                  x+=3
+                  i+=3
                   new_agent.addFilter(new_filter)
+
          self.mAgentDependList = dep_list
 
    def filtersChanged(self,packageList):
@@ -246,7 +262,7 @@ class PkgAgent:
       if self.mName not in packageList:
          packageList.append(self.mName)
          for pkg in self.mAgentDependList:
-            tf_list.append(pkg.filtersChanged(packageList)
+            tf_list.append(pkg.filtersChanged(packageList))
       return True in tf_list
 
    def getCurrentPackageList(self, packageList):
@@ -345,32 +361,18 @@ class Filter:
 #Filter("Version", lambda x: x <= "4.5")
 #Filter("Version", lambda x: x <= "4.5")
    
-   
-   def __init__(self, pkginfo_list, FilterString):
-      self.mIsSatifisfied = false
-      self.mPkgInfoList = pkginfo_list
-      self.mFilterString = FilterString
-      self.mRHS = []
-      self.mLHS = []
-      self.mLogicSymbol = []
-      self.mFilteredList = []
-
-   def filter(self, pkg_list):
-      return self.mFilteredList
-
-   def check(self):
-      # TODO: check to see if Filter is satisfied
-      return self.mIsSatisfied
-      
-   def isSatisfied(self):
-      return self.mIsSatisfied
-
 class PkgDB(object):
    """ Holds all the neccesary information to evaluate itself when needed.
        Is in charge of holding a list of PkgInfo's that contain info
        about the package.
    """
+   
+   __initialized = False
+   
    def __init__(self):
+      if self.__initialized:
+         return
+      self.__initialized = True
       self.mPkgInfos = {}           # {pkg_name: List of package infos}
       self.populatePkgInfoDB()
 
@@ -387,7 +389,20 @@ class PkgDB(object):
    def getVariableAndDeps(self, name, variable):
       flagDBG().out(flagDBG.INFO, "PkgDB.getVariableAndDeps", "Finding " + str(variable) + " in " + str(name))
       if self.mPkgInfos.has_key(name):
-         return self.mPkgInfos[name][0].getVariable(variable)      
+         dep_res = DepResolutionSystem()
+         agent = PkgAgent(name)
+         dep_res.addAgent(agent)
+         dep_res.resolveDeps()
+
+   def getPkgInfos(self, name):
+      if self.mPkgInfos.has_key(name):
+         return self.mPkgInfos[name]
+      else:
+         return []
+              
+   def exists(self, name):
+      return self.mPkgInfos.has_key(name)
+      #return self.mPkgInfos[name][0].getVariable(variable)      
 
    def getInfo(self, name):
       if self.mPkgInfos.has_key(name):
@@ -398,6 +413,7 @@ class PkgDB(object):
       pc_dict = {}
       for p in Utils.getPathList():
          glob_list = glob.glob(os.path.join(p, "*.pc")) # List of .pc files in that directory
+         flagDBG().out(flagDBG.INFO, "PkgDB.buildPcFileDict", "Process these pc files: %s" % str(glob_list))
          for g in glob_list: # Get key name and add file to value list in dictionary
             key = os.path.basename(g).rstrip(".pc")   # Strip .pc off the filename
             pc_dict.setdefault(key,[]).append(g)            
@@ -482,6 +498,7 @@ class OptionsEvaluator:
    def evaluateArgs(self):
 
       if self.mOptions.debug:
+         flagDBG().setLevel(flagDBG.VERBOSE)
          print PkgDB().getInfo(self.mArgs[0])
          print "Ran with extra args: " + str(self.mArgs)
 
@@ -565,6 +582,7 @@ class OptionsEvaluator:
 
 
 # GO!
+my_dbg = flagDBG()
 my_dep_system = DepResolutionSystem()
 opt_evaluator = OptionsEvaluator()
 opt_evaluator.evaluateArgs()
