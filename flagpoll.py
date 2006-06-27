@@ -147,8 +147,23 @@ class DepResolutionSystem(object):
    def getFilters(self):
       return self.mFilters
 
+   def createAgent(self, name):
+      if self.checkAgentExists(name):
+         return self.getAgent(name)
+      else:
+         agent = PkgAgent(name)
+         flagDBG().out(flagDBG.INFO, "DepResSys.createAgent", "Adding %s" % name)
+         self.addNewAgent(agent)
+         return agent
+
    def checkAgentExists(self, name):
       return self.mAgentDict.has_key(name)
+
+   def getAgent(self, name):
+      if self.mAgentDict.has_key(name):
+         return self.mAgentDict[name]
+      else:
+         flagDBG().out(flagDBG.ERROR, "DepResSys.getAgent", "Agent %s does not exist" % name)
 
    def addNewAgent(self, agent):
       self.mAgentDict[agent.getName()] = agent
@@ -234,7 +249,8 @@ class PkgAgent:
    #   Makes a PkgAgent that finds its current package with the version reqs
    def __init__(self, name):
       if DepResolutionSystem().checkAgentExists(name):
-         return
+         flagDBG().out(flagDBG.ERROR, "PkgAgent", "Package Agent %s already exists" % self.mName)
+         
       self.mName = name
       flagDBG().out(flagDBG.VERBOSE, "PkgAgent", "Creating:" + str(self.mName))
 
@@ -266,19 +282,24 @@ class PkgAgent:
          req_string = self.mCurrentPackage.getVariable("Requires")
          req_string_list = req_string.split(' ')
          i = 0
-         if len(req_string_list) == 0:
+         if req_string_list[0] == '':
             i=1
+         flagDBG().out(flagDBG.INFO, "PkgAgent.makeDependList",
+                       self.mCurrentPackage.getName() + " requires: " + str(req_string_list))
          while len(req_string_list) > i:
             if PkgDB().exists(req_string_list[i]):
                new_filter = []
-               new_agent = PkgAgent(req_string_list[i])
+               new_agent = DepResolutionSystem().createAgent(req_string_list[i])
                if len(req_string_list) > i+1:
                   if req_string_list[i+1] == "=":
-                     new_filter = Filter("Version", lambda x: x == req_string_list[i+2])
+                     ver_to_filt = req_string_list[i+2]
+                     new_filter = Filter("Version", lambda x: x == ver_to_filt)
                   elif req_string_list[i+1] == "<=":
-                     new_filter = Filter("Version", lambda x: x <= req_string_list[i+2])
+                     ver_to_filt = req_string_list[i+2]
+                     new_filter = Filter("Version", lambda x: x <= ver_to_filt)
                   elif req_string_list[i+1] == ">=":
-                     new_filter = Filter("Version", lambda x: x >= req_string_list[i+2])
+                     ver_to_filt = req_string_list[i+2]
+                     new_filter = Filter("Version", lambda x: x >= ver_to_filt)
                   else:
                      i+=1
                else:
@@ -434,7 +455,7 @@ class PkgDB(object):
                     "Finding " + str(variable) + " in " + str(name))
       if self.mPkgInfos.has_key(name):
          dep_res = DepResolutionSystem()
-         agent = PkgAgent(name)
+         agent = DepResolutionSystem().createAgent(name)
          dep_res.addResolveAgent(agent)
          dep_res.resolveDeps()
          pkgs = dep_res.getPackages()
@@ -462,7 +483,7 @@ class PkgDB(object):
       pc_dict = {}
       for p in Utils.getPathList():
          glob_list = glob.glob(os.path.join(p, "*.pc")) # List of .pc files in that directory
-         flagDBG().out(flagDBG.INFO, "PkgDB.buildPcFileDict",
+         flagDBG().out(flagDBG.VERBOSE, "PkgDB.buildPcFileDict",
                        "Process these pc files: %s" % str(glob_list))
          for g in glob_list: # Get key name and add file to value list in dictionary
             key = os.path.basename(g).rstrip(".pc")   # Strip .pc off the filename
@@ -548,9 +569,8 @@ class OptionsEvaluator:
    def evaluateArgs(self):
 
       if self.mOptions.debug:
-         flagDBG().setLevel(flagDBG.VERBOSE)
+         flagDBG().setLevel(flagDBG.INFO)
          print PkgDB().getInfo(self.mArgs[0])
-         print "Ran with extra args: " + str(self.mArgs)
 
       if self.mOptions.variable:
          print PkgDB().getVariable(self.mArgs[0], self.mOptions.variable)
