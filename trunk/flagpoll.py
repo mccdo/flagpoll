@@ -111,6 +111,8 @@ class flagDBG(object):
    def out(self, level, obj, message):
       if level >= self.mLevel: 
          print self.mLevelList[level] + ":" + str(obj) + ": " + str(message)
+      if level == self.ERROR:
+         sys.exit(1)
 
 
 class DepResolutionSystem(object):
@@ -130,7 +132,8 @@ class DepResolutionSystem(object):
       if DepResolutionSystem.__initialized:
          return
       DepResolutionSystem.__initialized = True
-      self.mResolveAgents = []      
+      self.mResolveAgents = []
+      self.mAgentDict = {}
       self.mFilters = []
       self.mInvalidPackageList = []
       self.mSatisfied = False
@@ -144,7 +147,13 @@ class DepResolutionSystem(object):
    def getFilters(self):
       return self.mFilters
 
-   def addAgent(self, agent):
+   def checkAgentExists(self, name):
+      return self.mAgentDict.has_key(name)
+
+   def addNewAgent(self, agent):
+      self.mAgentDict[agent.getName()] = agent
+
+   def addResolveAgent(self, agent):
       self.mResolveAgents.append(agent)
 
    def isSatisfied(self):
@@ -224,8 +233,15 @@ class PkgAgent:
 
    #   Makes a PkgAgent that finds its current package with the version reqs
    def __init__(self, name):
+      if DepResolutionSystem().checkAgentExists(name):
+         return
       self.mName = name
-      flagDBG().out(flagDBG.VERBOSE, "PkgAgent", "Created:" + str(self.mName))
+      flagDBG().out(flagDBG.VERBOSE, "PkgAgent", "Creating:" + str(self.mName))
+
+      if not PkgDB().exists(name):
+         flagDBG().out(flagDBG.ERROR, "PkgAgent", "No info for package: %s" % self.mName)
+
+      DepResolutionSystem().addNewAgent(self)
       self.mFilterList = DepResolutionSystem().getFilters()
       self.mBasePackageList = PkgDB().getPkgInfos(name)
       for filt in self.mFilterList:
@@ -272,7 +288,9 @@ class PkgAgent:
                   i+=3
                   new_agent.addFilter(new_filter)
             else:
-               i+=1
+               flagDBG().out(flagDBG.ERROR, "PkgAgent.makeDependList",
+                             "Package %s depends on %s but is not seem to be installed." % (self.mName, str(req_string_list[i])))
+
          flagDBG().out(flagDBG.VERBOSE, "PkgAgent.makeDependList", 
                        "List is:" + str([pkg.getName() for pkg in dep_list]))
       self.mAgentDependList = dep_list
@@ -363,20 +381,20 @@ class Filter:
    
    def __init__(self, variableName, testCallable):
       self.mVarName = variableName
-      self.testCallable = testCallable
+      self.mTestCallable = testCallable
       
    def filter(self, pkg_info_list):
       ret_pkg_list = []
       
       # Filter first
       for pkg in pkg_info_list:
-         var = pkg.getVariable(variableName)
-         if testCallable(var):
+         var = pkg.getVariable(self.mVarName)
+         if self.mTestCallable(var):
             ret_pkg_list.append(pkg)
             
       # Now sort
-      ret_pkg_list.sort(lambda lhs,rhs: cmp(lhs.getVariable(variableName),
-                                            rhs.getVariable(variableName)))
+      ret_pkg_list.sort(lambda lhs,rhs: cmp(lhs.getVariable(self.mVarName),
+                                            rhs.getVariable(self.mVarName)))
       
       return ret_pkg_list
 
@@ -417,7 +435,7 @@ class PkgDB(object):
       if self.mPkgInfos.has_key(name):
          dep_res = DepResolutionSystem()
          agent = PkgAgent(name)
-         dep_res.addAgent(agent)
+         dep_res.addResolveAgent(agent)
          dep_res.resolveDeps()
          pkgs = dep_res.getPackages()
          var_list = []
@@ -437,7 +455,7 @@ class PkgDB(object):
 
    def getInfo(self, name):
       if self.mPkgInfos.has_key(name):
-         return self.mPkgInfos[name][0].getInfo()      
+         return [pkg.getInfo() for pkg in self.mPkgInfos[name]]
 
    def buildPcFileDict(self):
       """ Builds up a dictionary of {name: list of files for name} """
