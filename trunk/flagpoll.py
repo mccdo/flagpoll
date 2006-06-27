@@ -70,7 +70,9 @@ class Utils:
       new_list= []
       for flg in flag_list:
          if flg not in new_list:
-            new_list.append(flg)
+            if flg != '':
+               new_list.append(flg)
+      return new_list
    stripDupFlags = staticmethod(stripDupFlags)            
       
 
@@ -277,12 +279,11 @@ class PkgAgent:
    def getCurrentPackageList(self, packageList):
       pkgs = []
       if self.mName not in packageList:
-         print self.mName
+         flagDBG().out(flagDBG.VERBOSE, "PkgAgent.getCurrentPackageList", "Package: %s" % self.mName)
          pkgs.append(self.mCurrentPackage)
          packageList.append(self.mName)
          for pkg in self.mAgentDependList:
             pkgs.extend(pkg.getCurrentPackageList(packageList))
-            print pkg.getName()
       return pkgs
 
    # current pkginfo for me
@@ -407,7 +408,7 @@ class PkgDB(object):
          pkgs = dep_res.getPackages()
          var_list = []
          for pkg in pkgs:
-           var_list.append(pkg.getVariable(name))
+           var_list.extend(pkg.getVariable(variable).split(' '))
          return var_list
 
    def getPkgInfos(self, name):
@@ -525,7 +526,7 @@ class OptionsEvaluator:
          print PkgDB().getVariable(self.mArgs[0], "Version")
          
       if self.mOptions.libs:
-         print PkgDB().getVariableAndDeps(self.mArgs[0], "Libs")
+         print Utils.stripDupFlags(PkgDB().getVariableAndDeps(self.mArgs[0], "Libs"))
 
       if self.mOptions.static:
          print PkgDB().getVariable(self.mArgs[0], "Static")
