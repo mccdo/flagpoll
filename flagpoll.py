@@ -450,6 +450,8 @@ class PkgDB(object):
                     "Finding " + str(variable) + " in " + str(name))
       if self.mPkgInfos.has_key(name):
          return self.mPkgInfos[name][0].getVariable(variable)
+      else:
+         flagDBG().out(flagDBG.ERROR, "PkgDB.getVariable", "Package %s does not found." % name)
 
    def getVariableAndDeps(self, name, variable):
       flagDBG().out(flagDBG.INFO, "PkgDB.getVariableAndDeps", 
@@ -464,12 +466,15 @@ class PkgDB(object):
          for pkg in pkgs:
            var_list.extend(pkg.getVariable(variable).split(' '))
          return var_list
+      else:
+         flagDBG().out(flagDBG.ERROR, "PkgDB.getVariableAndDeps", "Package %s does not found." % name)
+         
 
    def getPkgInfos(self, name):
       if self.mPkgInfos.has_key(name):
          return self.mPkgInfos[name]
       else:
-         return []
+         flagDBG().out(flagDBG.ERROR, "PkgDB.getPkgInfos", "Package %s does not found." % name)
               
    def exists(self, name):
       return self.mPkgInfos.has_key(name)
@@ -478,6 +483,8 @@ class PkgDB(object):
    def getInfo(self, name):
       if self.mPkgInfos.has_key(name):
          return [pkg.getInfo() for pkg in self.mPkgInfos[name]]
+      else:
+         flagDBG().out(flagDBG.ERROR, "PkgDB.getInfo", "Package %s does not found." % name)
 
    def buildPcFileDict(self):
       """ Builds up a dictionary of {name: list of files for name} """
@@ -570,7 +577,7 @@ class OptionsEvaluator:
    def evaluateArgs(self):
 
       if self.mOptions.debug:
-         flagDBG().setLevel(flagDBG.VERBOSE)
+         flagDBG().setLevel(flagDBG.WARN)
          print PkgDB().getInfo(self.mArgs[0])
 
       if self.mOptions.variable:
