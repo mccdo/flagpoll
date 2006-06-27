@@ -451,7 +451,7 @@ class PkgDB(object):
       if self.mPkgInfos.has_key(name):
          return self.mPkgInfos[name][0].getVariable(variable)
       else:
-         flagDBG().out(flagDBG.ERROR, "PkgDB.getVariable", "Package %s does not found." % name)
+         flagDBG().out(flagDBG.ERROR, "PkgDB.getVariable", "Package %s not found." % name)
 
    def getVariableAndDeps(self, name, variable):
       flagDBG().out(flagDBG.INFO, "PkgDB.getVariableAndDeps", 
@@ -467,14 +467,14 @@ class PkgDB(object):
            var_list.extend(pkg.getVariable(variable).split(' '))
          return var_list
       else:
-         flagDBG().out(flagDBG.ERROR, "PkgDB.getVariableAndDeps", "Package %s does not found." % name)
+         flagDBG().out(flagDBG.ERROR, "PkgDB.getVariableAndDeps", "Package %s not found." % name)
          
 
    def getPkgInfos(self, name):
       if self.mPkgInfos.has_key(name):
          return self.mPkgInfos[name]
       else:
-         flagDBG().out(flagDBG.ERROR, "PkgDB.getPkgInfos", "Package %s does not found." % name)
+         flagDBG().out(flagDBG.ERROR, "PkgDB.getPkgInfos", "Package %s not found." % name)
               
    def exists(self, name):
       return self.mPkgInfos.has_key(name)
@@ -484,7 +484,7 @@ class PkgDB(object):
       if self.mPkgInfos.has_key(name):
          return [pkg.getInfo() for pkg in self.mPkgInfos[name]]
       else:
-         flagDBG().out(flagDBG.ERROR, "PkgDB.getInfo", "Package %s does not found." % name)
+         flagDBG().out(flagDBG.ERROR, "PkgDB.getInfo", "Package %s not found." % name)
 
    def buildPcFileDict(self):
       """ Builds up a dictionary of {name: list of files for name} """
@@ -577,7 +577,7 @@ class OptionsEvaluator:
    def evaluateArgs(self):
 
       if self.mOptions.debug:
-         flagDBG().setLevel(flagDBG.WARN)
+         flagDBG().setLevel(flagDBG.VERBOSE)
          print PkgDB().getInfo(self.mArgs[0])
 
       if self.mOptions.variable:
