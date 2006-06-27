@@ -192,10 +192,11 @@ class DepResolutionSystem(object):
       return self.mResolvedPackageList
 
    def checkFiltersChanged(self):
-      return True in [pkg.filtersChanged() for pkg in self.mResolveAgents] 
+      list_to_use = []
+      return True in [pkg.filtersChanged(list_to_use) for pkg in self.mResolveAgents] 
 
    def resolveHelper(self):
-      self.resolveAgentsChanged = False
+      self.resolveAgentsChanged = True
       while self.resolveAgentsChanged:
          for agent in self.mResolveAgents:
             flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveHelper",
@@ -317,7 +318,7 @@ class PkgAgent:
       self.mAgentDependList = dep_list
 
    def filtersChanged(self,packageList):
-      tf_list = self.mFiltersChanged
+      tf_list = [self.mFiltersChanged]
       if self.mName not in packageList:
          packageList.append(self.mName)
          for pkg in self.mAgentDependList:
@@ -358,7 +359,7 @@ class PkgAgent:
          return ret_val
 
    def update(self, agentVisitedList, agentChangeList):
-      if self.name in agentVisitedList:
+      if self.mName in agentVisitedList:
          return
 
       agentVisitedList.append(self.mName)
@@ -370,7 +371,7 @@ class PkgAgent:
       # TODO: checkFilters and add them
       # if a pkg is in visitedList then add yourself to agentChangeList
       
-      for pkg in mAgentDependList:
+      for pkg in self.mAgentDependList:
          pkg.update(agentVisitedList, agentChangeList)
       return
 
@@ -569,7 +570,7 @@ class OptionsEvaluator:
    def evaluateArgs(self):
 
       if self.mOptions.debug:
-         flagDBG().setLevel(flagDBG.INFO)
+         flagDBG().setLevel(flagDBG.VERBOSE)
          print PkgDB().getInfo(self.mArgs[0])
 
       if self.mOptions.variable:
