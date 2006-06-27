@@ -60,7 +60,8 @@ class Utils:
       path_list = [p for p in path_list if os.path.exists(p)]
       path_list.extend(pkg_cfg_dir)
       path_list.extend(ld_path)
-      flagDBG().out(flagDBG.INFO, "getPathList", "Using path list: " + str(path_list))
+      flagDBG().out(flagDBG.INFO, "Utils.getPathList",
+                    "Using path list: " + str(path_list))
       return path_list
    getPathList = staticmethod(getPathList)
 
@@ -159,7 +160,9 @@ class DepResolutionSystem(object):
       
 
    def getPackages(self):
-      flagDBG().out(flagDBG.VERBOSE, "DepResSys.getPackages", "List of valid package" + str([pkg.getName() for pkg in self.mResolvedPackageList]))
+      flagDBG().out(flagDBG.VERBOSE, "DepResSys.getPackages",
+                    "List of valid packages" +
+                    str([pkg.getName() for pkg in self.mResolvedPackageList]))
       # If this comes back empty then there isn't a valid set of packages to use
       self.updateResolvedPackages()
       return self.mResolvedPackageList
@@ -171,7 +174,8 @@ class DepResolutionSystem(object):
       self.resolveAgentsChanged = False
       while self.resolveAgentsChanged:
          for agent in self.mResolveAgents:
-            flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveHelper", "Updating " + agent.getName())
+            flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveHelper",
+                          "Updating " + agent.getName())
             agent.update(self.mAgentsVisitedList, self.mAgentChangeList)
          self.resolveAgentsChanged = self.checkFiltersChanged()
 
@@ -198,10 +202,14 @@ class DepResolutionSystem(object):
                agentChangeNumber+=1
             else:
                if(self.mAgentChangeList[agentChangeNumber].getViablePackages()):
-                  flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "Removing bad pkg from " + self.mAgentChangeList[agentChangeNumber].getName())
+                  flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps",
+                                "Removing bad pkg from " +
+                                self.mAgentChangeList[agentChangeNumber].getName())
                   self.mInvalidPackageList.append(self.mAgentChangeList[agentChangeNumber].removeCurrentPackage())
                else:
-                  flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps", "No combinations.. Resetting " + self.mAgentChangeList[agentChangeNumber].getName())
+                  flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps",
+                                "No combinations.. Resetting " +
+                                self.mAgentChangeList[agentChangeNumber].getName())
                   self.mAgentChangeList[agentChangeNumber].reset()
                   agentChangeNumber+=1
          self.resolveHelper() 
@@ -265,7 +273,8 @@ class PkgAgent:
                   new_agent.addFilter(new_filter)
             else:
                i+=1
-         flagDBG().out(flagDBG.VERBOSE, "PkgAgent.makeDependList", "List is:" + str([pkg.getName() for pkg in dep_list]))
+         flagDBG().out(flagDBG.VERBOSE, "PkgAgent.makeDependList", 
+                       "List is:" + str([pkg.getName() for pkg in dep_list]))
       self.mAgentDependList = dep_list
 
    def filtersChanged(self,packageList):
@@ -279,7 +288,8 @@ class PkgAgent:
    def getCurrentPackageList(self, packageList):
       pkgs = []
       if self.mName not in packageList:
-         flagDBG().out(flagDBG.VERBOSE, "PkgAgent.getCurrentPackageList", "Package: %s" % self.mName)
+         flagDBG().out(flagDBG.VERBOSE, "PkgAgent.getCurrentPackageList",
+                       "Package: %s" % self.mName)
          pkgs.append(self.mCurrentPackage)
          packageList.append(self.mName)
          for pkg in self.mAgentDependList:
@@ -293,12 +303,14 @@ class PkgAgent:
    # Someone else usually places these on me
    # I keep track of those separately
    def addFilter(self, Filter):
-      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.addFilter", "Adding a Filter to %s" % self.mName)
+      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.addFilter",
+                    "Adding a Filter to %s" % self.mName)
       self.mFiltersChanged = True
       self.mFilterList.append(Filter)
 
    def removeCurrentPackage(self):
-      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.removeCurrentPackage", "Removing current package of %s" % self.mName)
+      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.removeCurrentPackage",
+                    "Removing current package of %s" % self.mName)
       if self.mViablePackageList:
          ret_val = self.mViablePackageList[0] in self.mBasePackageList
          del mViablePackageList[0]
@@ -394,12 +406,14 @@ class PkgDB(object):
       return type._the_instance
       
    def getVariable(self, name, variable):
-      flagDBG().out(flagDBG.INFO, "PkgDB.getVariable", "Finding " + str(variable) + " in " + str(name))
+      flagDBG().out(flagDBG.INFO, "PkgDB.getVariable", 
+                    "Finding " + str(variable) + " in " + str(name))
       if self.mPkgInfos.has_key(name):
          return self.mPkgInfos[name][0].getVariable(variable)
 
    def getVariableAndDeps(self, name, variable):
-      flagDBG().out(flagDBG.INFO, "PkgDB.getVariableAndDeps", "Finding " + str(variable) + " in " + str(name))
+      flagDBG().out(flagDBG.INFO, "PkgDB.getVariableAndDeps", 
+                    "Finding " + str(variable) + " in " + str(name))
       if self.mPkgInfos.has_key(name):
          dep_res = DepResolutionSystem()
          agent = PkgAgent(name)
@@ -430,7 +444,8 @@ class PkgDB(object):
       pc_dict = {}
       for p in Utils.getPathList():
          glob_list = glob.glob(os.path.join(p, "*.pc")) # List of .pc files in that directory
-         flagDBG().out(flagDBG.INFO, "PkgDB.buildPcFileDict", "Process these pc files: %s" % str(glob_list))
+         flagDBG().out(flagDBG.INFO, "PkgDB.buildPcFileDict",
+                       "Process these pc files: %s" % str(glob_list))
          for g in glob_list: # Get key name and add file to value list in dictionary
             key = os.path.basename(g).rstrip(".pc")   # Strip .pc off the filename
             pc_dict.setdefault(key,[]).append(g)            
