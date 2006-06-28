@@ -74,7 +74,16 @@ class Utils:
             if flg != '':
                new_list.append(flg)
       return new_list
-   stripDupFlags = staticmethod(stripDupFlags)            
+   stripDupFlags = staticmethod(stripDupFlags)
+
+   def printList(gen_list):
+      list_string = ""
+      for item in gen_list:
+         list_string+=str(item)
+         list_string+=" "
+      print list_string
+   printList = staticmethod(printList)
+
       
 
 class flagDBG(object):
@@ -281,10 +290,17 @@ class PkgAgent:
       dep_list = []
       if self.mCurrentPackage:
          req_string = self.mCurrentPackage.getVariable("Requires")
-         req_string_list = req_string.split(' ')
+         if req_string == "":
+            return
+         req_string = req_string.replace(',', ' ')
+         req_string = req_string.replace('(', ' ')
+         req_string = req_string.replace(')', ' ')
+         space_req_string_list = req_string.split(' ')
+         req_string_list = []
+         for entry in space_req_string_list:
+            if len(entry) > 0:
+               req_string_list.append(entry)
          i = 0
-         if req_string_list[0] == '':
-            i=1
          flagDBG().out(flagDBG.INFO, "PkgAgent.makeDependList",
                        self.mCurrentPackage.getName() + " requires: " + str(req_string_list))
          while len(req_string_list) > i:
@@ -453,21 +469,23 @@ class PkgDB(object):
       else:
          flagDBG().out(flagDBG.ERROR, "PkgDB.getVariable", "Package %s not found." % name)
 
-   def getVariableAndDeps(self, name, variable):
+   def getVariableAndDeps(self, pkg_list, variable):
       flagDBG().out(flagDBG.INFO, "PkgDB.getVariableAndDeps", 
-                    "Finding " + str(variable) + " in " + str(name))
-      if self.mPkgInfos.has_key(name):
-         dep_res = DepResolutionSystem()
-         agent = DepResolutionSystem().createAgent(name)
-         dep_res.addResolveAgent(agent)
-         dep_res.resolveDeps()
-         pkgs = dep_res.getPackages()
-         var_list = []
-         for pkg in pkgs:
-           var_list.extend(pkg.getVariable(variable).split(' '))
-         return var_list
-      else:
-         flagDBG().out(flagDBG.ERROR, "PkgDB.getVariableAndDeps", "Package %s not found." % name)
+                    "Finding " + str(variable) + " in " + str(pkg_list))
+
+      for name in pkg_list:
+         if self.mPkgInfos.has_key(name):
+            agent = DepResolutionSystem().createAgent(name)
+            DepResolutionSystem().addResolveAgent(agent)
+         else:
+            flagDBG().out(flagDBG.ERROR, "PkgDB.getVariableAndDeps", "Package %s not found." % name)
+
+      DepResolutionSystem().resolveDeps()
+      pkgs = DepResolutionSystem().getPackages()
+      var_list = []
+      for pkg in pkgs:
+        var_list.extend(pkg.getVariable(variable).split(' '))
+      return var_list
          
 
    def getPkgInfos(self, name):
@@ -587,19 +605,19 @@ class OptionsEvaluator:
          print PkgDB().getVariable(self.mArgs[0], "Version")
          
       if self.mOptions.libs:
-         print Utils.stripDupFlags(PkgDB().getVariableAndDeps(self.mArgs[0], "Libs"))
+         Utils.printList(Utils.stripDupFlags(PkgDB().getVariableAndDeps(self.mArgs, "Libs")))
 
       if self.mOptions.static:
          print PkgDB().getVariable(self.mArgs[0], "Static")
 
       if self.mOptions.cflags:
-         print PkgDB().getVariableAndDeps(self.mArgs[0], "Cflags")
+         print PkgDB().getVariableAndDeps(self.mArgs, "Cflags")
 
 #      if not self.mOptions.list_all:
 #        print PkgDB().getPkgList
 
-#      if not self.mOptions.exists:
-#         print PkgDB().checkExistence(self.mArgs[0])
+      if self.mOptions.exists:
+         print PkgDB().exists(self.mArgs[0])
 
 
    def GetOptionParser(self):
