@@ -40,7 +40,7 @@ class Utils:
    def getFlagpollVersion():
       FLAGPOLL_MAJOR_VERSION = 0
       FLAGPOLL_MINOR_VERSION = 1
-      FLAGPOLL_PATCH_VERSION = 2
+      FLAGPOLL_PATCH_VERSION = 3
       return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
    getFlagpollVersion = staticmethod(getFlagpollVersion)
 
