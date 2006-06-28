@@ -562,20 +562,23 @@ class PkgInfo:
          continue
        elif ':' in line: # exported variable
          name, val = line.split(':')
+         name = name.strip()
          val = val.strip()
          if '$' in val:
            try:
              val = Template(val).substitute(locals)
            except ValueError:
-             raise ValueError("Error in variable substitution!")
+            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid .pc file" % self.mName)
          vars[name] = val
        elif '=' in line: # local variable
          name, val = line.split('=')
+         name = name.strip()
+         val = val.strip()
          if '$' in val:
            try:
              val = Template(val).substitute(locals)
            except ValueError:
-             raise ValueError("Error in variable substitution!")
+            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid .pc file" % self.mName)
          locals[name] = val
       return vars
 
