@@ -122,6 +122,19 @@ class Utils:
       return lib_list
    libsOnlyLinkerFlags = staticmethod(libsOnlyLinkerFlags)      
 
+   def libsOnlyOtherLinkerFlags(flag_list):
+     # List is constructed as such ("-L /path", "-L/sfad", "-fpge", "-l pg", "-lpg")
+      # We do slightly dumb stripping though
+      other_list = []
+      for flg in flag_list:
+         flg = flg.strip()
+         if flg not in other_list:
+            if len(flg) > 0:
+               if not flg.startswith("-l") and not flg.startswith("-L") and not flag.startswith("-R"):
+                  other_list.append(flg)
+      return other_list
+   libsOnlyOtherLinkerFlags = staticmethod(libsOnlyOtherLinkerFlags) 
+
    def libDirsOnlyLinkerFlags(flag_list):
      # List is constructed as such ("-L /path", "-L/sfad", "-fpge", "-l pg", "-lpg")
       # We do slightly dumb stripping though
@@ -726,10 +739,17 @@ class OptionsEvaluator:
       if self.mOptions.libs_only_L:
          Utils.printList(Utils.libDirsOnlyLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
 
+      if self.mOptions.libs_only_other:
+         Utils.printList(Utils.libDirsOnlyOtherLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
 
       if self.mOptions.cflags:
          Utils.printList(Utils.stripDupIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
 
+      if self.mOptions.cflags_only_I:
+         Utils.printList(Utils.cflagsOnlyDirIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
+
+      if self.mOptions.cflags_only_other:
+         Utils.printList(Utils.cflagsOnlyOtherIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
 #      if not self.mOptions.list_all:
 #        print PkgDB().getPkgList
 
