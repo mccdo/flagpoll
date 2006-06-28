@@ -144,8 +144,6 @@ class Utils:
       print list_string
    printList = staticmethod(printList)
 
-      
-
 class flagDBG(object):
 #      Logging class is really easy to use
 #      Levels:
@@ -682,7 +680,14 @@ class OptionsEvaluator:
 
       if self.mOptions.debug:
          flagDBG().setLevel(flagDBG.VERBOSE)
-         print PkgDB().getInfo(self.mArgs[0])
+         Utils.printList(PkgDB().getInfo(self.mArgs[0]))
+
+      if self.mOptions.exists:
+         print PkgDB().exists(self.mArgs[0])
+
+      if self.mOptions.info:
+         for pkg in self.mArgs:
+            Utils.printList(PkgDB().getInfo(pkg))
 
       if self.mOptions.variable:
          Utils.printList(Utils.stripDupInList(PkgDB().getVariablesAndDeps(self.mArgs, [self.mOptions.variable])))
@@ -723,8 +728,6 @@ class OptionsEvaluator:
 #      if not self.mOptions.list_all:
 #        print PkgDB().getPkgList
 
-      if self.mOptions.exists:
-         print PkgDB().exists(self.mArgs[0])
 
 
    def GetOptionParser(self):
@@ -757,6 +760,8 @@ class OptionsEvaluator:
                         help="list all known packages")
       parser.add_option("--debug", action="store_true", dest="debug", 
                         help="show verbose debug information")
+      parser.add_option("--info", action="store_true", dest="info", 
+                        help="show information for packages")
       parser.add_option("--print-errors", action="store_true", dest="print_errors", 
                         help="show verbose information about missing or conflicting packages")
       parser.add_option("--silence-errors", action="store_true", dest="silence_errors", 
