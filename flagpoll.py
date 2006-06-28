@@ -75,7 +75,7 @@ class Utils:
    stripDupInList = staticmethod(stripDupInList)
 
    def stripDupLinkerFlags(flag_list):
-      # List is constructed as such ["-L /path", "-L/sfad", "-fpge", "-l pg", "-lpg"
+      # List is constructed as such ("-L /path", "-L/sfad", "-fpge", "-l pg", "-lpg")
       # We do slightly dumb stripping though
       lib_list = []
       dir_list = []
@@ -90,6 +90,24 @@ class Utils:
       new_list = dir_list + lib_list
       return new_list
    stripDupLinkerFlags = staticmethod(stripDupLinkerFlags)
+
+   def stripDupIncludeFlags(flag_list):
+      # List is constructed as such ("-I/inc", "-fno-static-blah")
+      # We do slightly dumb stripping though
+      inc_list = []
+      extra_list = []
+      for flg in flag_list:
+         flg = flg.strip()
+         if flg not in inc_list and flg not in extra_list:
+            if len(flg) > 0:
+               if flg.startswith("-I"):
+                  inc_list.append(flg)
+               else:
+                  extra_list.append(flg)
+      extra_list.sort()
+      new_list = inc_list + extra_list
+      return new_list
+   stripDupIncludeFlags = staticmethod(stripDupIncludeFlags)
 
    def printList(gen_list):
       list_string = ""
@@ -577,7 +595,7 @@ class PkgInfo:
        if not line:
          continue
        elif ':' in line: # exported variable
-         name, val = line.split(':')
+         name, val = line.split(':', 1)
          name = name.strip()
          val = val.strip()
          if '$' in val:
@@ -587,7 +605,7 @@ class PkgInfo:
             flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid .pc file" % self.mName)
          vars[name] = val
        elif '=' in line: # local variable
-         name, val = line.split('=')
+         name, val = line.split('=', 1)
          name = name.strip()
          val = val.strip()
          if '$' in val:
@@ -630,7 +648,7 @@ class OptionsEvaluator:
          print PkgDB().getVariable(self.mArgs[0], "Static")
 
       if self.mOptions.cflags:
-         print PkgDB().getVariableAndDeps(self.mArgs, "Cflags")
+         Utils.printList(Utils.stripDupIncludeFlags(PkgDB().getVariableAndDeps(self.mArgs, "Cflags")))
 
 #      if not self.mOptions.list_all:
 #        print PkgDB().getPkgList
