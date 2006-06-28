@@ -547,11 +547,15 @@ class PkgDB(object):
             flagDBG().out(flagDBG.ERROR, "PkgDB.getVariable", "Package %s not found." % name)
       return ret_list
          
-   def getVariablesAndDeps(self, pkg_list, variable_list, private_deps=False):
+   def getVariablesAndDeps(self, pkg_list, variable_list):
       flagDBG().out(flagDBG.INFO, "PkgDB.getVariablesAndDeps", 
                     "Finding " + str(variable_list) + " in " + str(pkg_list))
-      if private_deps:
-         DepResolutionSystem().setPrivateRequires(True)
+      
+      if DepResolutionSystem().checkPrivateRequires():
+         temp_var_list = []
+         for var in variable_list:
+            temp_var_list.append(var.join(".private"))
+         variable_list = variable_list + temp_var_list
       
       for name in pkg_list:
          if self.mPkgInfos.has_key(name):
@@ -692,6 +696,9 @@ class OptionsEvaluator:
       if self.mOptions.variable:
          Utils.printList(Utils.stripDupInList(PkgDB().getVariablesAndDeps(self.mArgs, [self.mOptions.variable])))
 
+      if self.mOptions.static:
+         DepResolutionSystem().setPrivateRequires(True)
+
       if self.mOptions.atleast_version:
          atleast_version = self.mOptions.atleast_version
          atleast_filter = Filter("Version", lambda x: x >= atleast_version)
@@ -719,8 +726,6 @@ class OptionsEvaluator:
       if self.mOptions.libs_only_L:
          Utils.printList(Utils.libDirsOnlyLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
 
-      if self.mOptions.static:
-         Utils.printList(Utils.stripDupLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs", "Libs.private"], True)))
 
       if self.mOptions.cflags:
          Utils.printList(Utils.stripDupIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
