@@ -217,6 +217,9 @@ class DepResolutionSystem(object):
    def getFilters(self):
       return self.mFilters
 
+   def addFilter(self, filter):
+      self.mFilters.append(filter)
+
    def createAgent(self, name):
       if self.checkAgentExists(name):
          return self.getAgent(name)
@@ -261,8 +264,8 @@ class DepResolutionSystem(object):
 
    def getPackages(self):
       flagDBG().out(flagDBG.VERBOSE, "DepResSys.getPackages",
-                    "List of valid packages" +
-                    str([pkg.getName() for pkg in self.mResolvedPackageList]))
+                    "Generating list of valid packages ")
+                    #str([pkg.getCurrentPa.getName() for pkg in self.mResolvedPackageList]))
       # If this comes back empty then there isn't a valid set of packages to use
       self.updateResolvedPackages()
       return self.mResolvedPackageList
@@ -338,7 +341,11 @@ class PkgAgent:
       self.mFilterList = DepResolutionSystem().getFilters()
       self.mBasePackageList = PkgDB().getPkgInfos(name)
       for filt in self.mFilterList:
-         filt.filter(self.mBasePackageList)
+         self.mBasePackageList = filt.filter(self.mBasePackageList)
+
+      if len(self.mBasePackageList) == 0:
+         flagDBG().out(flagDBG.ERROR, "PkgAgent", "No viable packages for: %s" % self.mName)
+         
 
       self.mViablePackageList = copy.deepcopy(self.mBasePackageList)
       if self.mViablePackageList:
@@ -464,7 +471,7 @@ class PkgAgent:
    def updateFilters(self):
       for filt in self.mFilterList:
          filt.filter(self.mViablePackageList)
-      if self.mViablePackageList[0]:
+      if len(self.mViablePackageList) > 0:
          self.mCurrentPackage = self.mViablePackageList[0]
       else:
          self.mCurrentPackage = []
@@ -559,8 +566,9 @@ class PkgDB(object):
       pkgs = DepResolutionSystem().getPackages()
       var_list = []
       for pkg in pkgs:
-         for var in variable_list:
-            var_list.extend(pkg.getVariable(var).split(' '))
+         if pkg:
+            for var in variable_list:
+               var_list.extend(pkg.getVariable(var).split(' '))
 
       return var_list
 
@@ -678,6 +686,21 @@ class OptionsEvaluator:
 
       if self.mOptions.variable:
          Utils.printList(Utils.stripDupInList(PkgDB().getVariablesAndDeps(self.mArgs, [self.mOptions.variable])))
+
+      if self.mOptions.atleast_version:
+         atleast_version = self.mOptions.atleast_version
+         atleast_filter = Filter("Version", lambda x: x >= atleast_version)
+         DepResolutionSystem().addFilter(atleast_filter)
+         
+      if self.mOptions.max_version:
+         max_version = self.mOptions.max_version
+         max_filter = Filter("Version", lambda x: x <= max_version)
+         DepResolutionSystem().addFilter(max_filter)
+         
+      if self.mOptions.exact_version:
+         exact_version = self.mOptions.exact_version
+         exact_filter = Filter("Version", lambda x: x == exact_version)
+         DepResolutionSystem().addFilter(exact_filter)
 
       if self.mOptions.modversion:
          print PkgDB().getVariables(self.mArgs[0], ["Version"])
