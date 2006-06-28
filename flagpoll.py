@@ -65,22 +65,38 @@ class Utils:
       return path_list
    getPathList = staticmethod(getPathList)
 
-   def stripDupFlags(flag_list):
+   def stripDupInList(gen_list):
+      new_list = []
+      for item in gen_list:
+         if item not in new_list:
+            if len(item) > 0:
+               new_list.append(item)
+      return new_list
+   stripDupInList = staticmethod(stripDupInList)
+
+   def stripDupLinkerFlags(flag_list):
       # List is constructed as such ["-L /path", "-L/sfad", "-fpge", "-l pg", "-lpg"
       # We do slightly dumb stripping though
-      new_list= []
+      lib_list = []
+      dir_list = []
       for flg in flag_list:
-         if flg not in new_list:
-            if flg != '':
-               new_list.append(flg)
+         flg = flg.strip()
+         if flg not in lib_list and flg not in dir_list:
+            if len(flg) > 0:
+               if flg.startswith("-L"):
+                  dir_list.append(flg)
+               else:
+                  lib_list.append(flg)
+      new_list = dir_list + lib_list
       return new_list
-   stripDupFlags = staticmethod(stripDupFlags)
+   stripDupLinkerFlags = staticmethod(stripDupLinkerFlags)
 
    def printList(gen_list):
       list_string = ""
       for item in gen_list:
-         list_string+=str(item)
-         list_string+=" "
+         if len(item) > 0:
+            list_string+=str(item)
+            list_string+=" "
       print list_string
    printList = staticmethod(printList)
 
@@ -602,13 +618,13 @@ class OptionsEvaluator:
          print PkgDB().getInfo(self.mArgs[0])
 
       if self.mOptions.variable:
-         print PkgDB().getVariable(self.mArgs[0], self.mOptions.variable)
+         Utils.printList(Utils.stripDupInList(PkgDB().getVariableAndDeps(self.mArgs, self.mOptions.variable)))
 
       if self.mOptions.modversion:
          print PkgDB().getVariable(self.mArgs[0], "Version")
          
       if self.mOptions.libs:
-         Utils.printList(Utils.stripDupFlags(PkgDB().getVariableAndDeps(self.mArgs, "Libs")))
+         Utils.printList(Utils.stripDupLinkerFlags(PkgDB().getVariableAndDeps(self.mArgs, "Libs")))
 
       if self.mOptions.static:
          print PkgDB().getVariable(self.mArgs[0], "Static")
