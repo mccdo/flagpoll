@@ -83,7 +83,7 @@ class Utils:
          flg = flg.strip()
          if flg not in lib_list and flg not in dir_list:
             if len(flg) > 0:
-               if flg.startswith("-L"):
+               if flg.startswith("-L") or flg.startswith("-R"):
                   dir_list.append(flg)
                else:
                   lib_list.append(flg)
@@ -108,6 +108,32 @@ class Utils:
       new_list = inc_list + extra_list
       return new_list
    stripDupIncludeFlags = staticmethod(stripDupIncludeFlags)
+
+   def libsOnlyLinkerFlags(flag_list):
+     # List is constructed as such ("-L /path", "-L/sfad", "-fpge", "-l pg", "-lpg")
+      # We do slightly dumb stripping though
+      lib_list = []
+      for flg in flag_list:
+         flg = flg.strip()
+         if flg not in lib_list:
+            if len(flg) > 0:
+               if flg.startswith("-l"):
+                  lib_list.append(flg)
+      return lib_list
+   libsOnlyLinkerFlags = staticmethod(libsOnlyLinkerFlags)      
+
+   def libDirsOnlyLinkerFlags(flag_list):
+     # List is constructed as such ("-L /path", "-L/sfad", "-fpge", "-l pg", "-lpg")
+      # We do slightly dumb stripping though
+      dir_list = []
+      for flg in flag_list:
+         flg = flg.strip()
+         if flg not in dir_list:
+            if len(flg) > 0:
+               if flg.startswith("-L") or flg.startswith("-R"):
+                  dir_list.append(flg)
+      return dir_list
+   libDirsOnlyLinkerFlags = staticmethod(libDirsOnlyLinkerFlags) 
 
    def printList(gen_list):
       list_string = ""
@@ -519,8 +545,28 @@ class PkgDB(object):
       var_list = []
       for pkg in pkgs:
         var_list.extend(pkg.getVariable(variable).split(' '))
+
       return var_list
          
+   def getVariablesAndDeps(self, pkg_list, variable_list):
+      flagDBG().out(flagDBG.INFO, "PkgDB.getVariableAndDeps", 
+                    "Finding " + str(variable_list) + " in " + str(pkg_list))
+
+      for name in pkg_list:
+         if self.mPkgInfos.has_key(name):
+            agent = DepResolutionSystem().createAgent(name)
+            DepResolutionSystem().addResolveAgent(agent)
+         else:
+            flagDBG().out(flagDBG.ERROR, "PkgDB.getVariableAndDeps", "Package %s not found." % name)
+
+      DepResolutionSystem().resolveDeps()
+      pkgs = DepResolutionSystem().getPackages()
+      var_list = []
+      for pkg in pkgs:
+         for var in variable_list:
+            var_list.extend(pkg.getVariable(var).split(' '))
+      return var_list
+
 
    def getPkgInfos(self, name):
       if self.mPkgInfos.has_key(name):
@@ -644,8 +690,14 @@ class OptionsEvaluator:
       if self.mOptions.libs:
          Utils.printList(Utils.stripDupLinkerFlags(PkgDB().getVariableAndDeps(self.mArgs, "Libs")))
 
-      if self.mOptions.static:
-         print PkgDB().getVariable(self.mArgs[0], "Static")
+      if self.mOptions.libs_only_l:
+         Utils.printList(Utils.libsOnlyLinkerFlags(PkgDB().getVariableAndDeps(self.mArgs, "Libs")))
+
+      if self.mOptions.libs_only_L:
+         Utils.printList(Utils.libDirsOnlyLinkerFlags(PkgDB().getVariableAndDeps(self.mArgs, "Libs")))
+
+      #if self.mOptions.static:
+      #   Utils.printList(Utils.stripDupLinkerFlags(PkgDB().getVariablesAndPrivateDeps(self.mArgs, ("Libs", "Libs.private"))))
 
       if self.mOptions.cflags:
          Utils.printList(Utils.stripDupIncludeFlags(PkgDB().getVariableAndDeps(self.mArgs, "Cflags")))
