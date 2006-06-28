@@ -212,6 +212,7 @@ class DepResolutionSystem(object):
                                  # the next best package of them
       self.mAgentsVisitedList = [] # list of Agents that have been visited
       self.mResolvedPackageList = [] # list that is generated when deps are satified
+      self.mCheckPrivateRequires = False
 
    def getFilters(self):
       return self.mFilters
@@ -224,6 +225,12 @@ class DepResolutionSystem(object):
          flagDBG().out(flagDBG.INFO, "DepResSys.createAgent", "Adding %s" % name)
          self.addNewAgent(agent)
          return agent
+
+   def setPrivateRequires( self, req ):
+      self.mCheckPrivateRequires = req
+
+   def checkPrivateRequires(self):
+      return self.mCheckPrivateRequires
 
    def checkAgentExists(self, name):
       return self.mAgentDict.has_key(name)
@@ -350,6 +357,9 @@ class PkgAgent:
       dep_list = []
       if self.mCurrentPackage:
          req_string = self.mCurrentPackage.getVariable("Requires")
+         if DepResolutionSystem().checkPrivateRequires():
+            req_string = req_string + " " + self.mCurrentPackage.getVariable("Requires.private")
+         req_string = req_string.strip()
          if req_string == "":
             return
          req_string = req_string.replace(',', ' ')
@@ -521,43 +531,29 @@ class PkgDB(object):
          type._the_instance = object.__new__(type)
       return type._the_instance
       
-   def getVariable(self, name, variable):
+   def getVariables(self, name, variable_list):
       flagDBG().out(flagDBG.INFO, "PkgDB.getVariable", 
-                    "Finding " + str(variable) + " in " + str(name))
-      if self.mPkgInfos.has_key(name):
-         return self.mPkgInfos[name][0].getVariable(variable)
-      else:
-         flagDBG().out(flagDBG.ERROR, "PkgDB.getVariable", "Package %s not found." % name)
-
-   def getVariableAndDeps(self, pkg_list, variable):
-      flagDBG().out(flagDBG.INFO, "PkgDB.getVariableAndDeps", 
-                    "Finding " + str(variable) + " in " + str(pkg_list))
-
-      for name in pkg_list:
+                    "Finding " + str(variable_list) + " in " + str(name))
+      ret_list = []
+      for var in variable_list:
          if self.mPkgInfos.has_key(name):
-            agent = DepResolutionSystem().createAgent(name)
-            DepResolutionSystem().addResolveAgent(agent)
+            ret_list.extend(self.mPkgInfos[name][0].getVariable(var))
          else:
-            flagDBG().out(flagDBG.ERROR, "PkgDB.getVariableAndDeps", "Package %s not found." % name)
-
-      DepResolutionSystem().resolveDeps()
-      pkgs = DepResolutionSystem().getPackages()
-      var_list = []
-      for pkg in pkgs:
-        var_list.extend(pkg.getVariable(variable).split(' '))
-
-      return var_list
+            flagDBG().out(flagDBG.ERROR, "PkgDB.getVariable", "Package %s not found." % name)
+      return ret_list
          
-   def getVariablesAndDeps(self, pkg_list, variable_list):
-      flagDBG().out(flagDBG.INFO, "PkgDB.getVariableAndDeps", 
+   def getVariablesAndDeps(self, pkg_list, variable_list, private_deps=False):
+      flagDBG().out(flagDBG.INFO, "PkgDB.getVariablesAndDeps", 
                     "Finding " + str(variable_list) + " in " + str(pkg_list))
-
+      if private_deps:
+         DepResolutionSystem().setPrivateRequires(True)
+      
       for name in pkg_list:
          if self.mPkgInfos.has_key(name):
             agent = DepResolutionSystem().createAgent(name)
             DepResolutionSystem().addResolveAgent(agent)
          else:
-            flagDBG().out(flagDBG.ERROR, "PkgDB.getVariableAndDeps", "Package %s not found." % name)
+            flagDBG().out(flagDBG.ERROR, "PkgDB.getVariablesAndDeps", "Package %s not found." % name)
 
       DepResolutionSystem().resolveDeps()
       pkgs = DepResolutionSystem().getPackages()
@@ -565,8 +561,8 @@ class PkgDB(object):
       for pkg in pkgs:
          for var in variable_list:
             var_list.extend(pkg.getVariable(var).split(' '))
-      return var_list
 
+      return var_list
 
    def getPkgInfos(self, name):
       if self.mPkgInfos.has_key(name):
@@ -576,7 +572,6 @@ class PkgDB(object):
               
    def exists(self, name):
       return self.mPkgInfos.has_key(name)
-      #return self.mPkgInfos[name][0].getVariable(variable)      
 
    def getInfo(self, name):
       if self.mPkgInfos.has_key(name):
@@ -592,7 +587,7 @@ class PkgDB(object):
          flagDBG().out(flagDBG.VERBOSE, "PkgDB.buildPcFileDict",
                        "Process these pc files: %s" % str(glob_list))
          for g in glob_list: # Get key name and add file to value list in dictionary
-            key = os.path.basename(g).rstrip(".pc")   # Strip .pc off the filename
+            key = os.path.basename(g)[:-3]   # Strip .pc off the filename...rstrip no worky
             pc_dict.setdefault(key,[]).append(g)            
       
       return pc_dict # { "key", [ "list", "of", "corresponding", "pc", "files"] }
@@ -682,25 +677,25 @@ class OptionsEvaluator:
          print PkgDB().getInfo(self.mArgs[0])
 
       if self.mOptions.variable:
-         Utils.printList(Utils.stripDupInList(PkgDB().getVariableAndDeps(self.mArgs, self.mOptions.variable)))
+         Utils.printList(Utils.stripDupInList(PkgDB().getVariablesAndDeps(self.mArgs, [self.mOptions.variable])))
 
       if self.mOptions.modversion:
-         print PkgDB().getVariable(self.mArgs[0], "Version")
+         print PkgDB().getVariables(self.mArgs[0], ["Version"])
          
       if self.mOptions.libs:
-         Utils.printList(Utils.stripDupLinkerFlags(PkgDB().getVariableAndDeps(self.mArgs, "Libs")))
+         Utils.printList(Utils.stripDupLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
 
       if self.mOptions.libs_only_l:
-         Utils.printList(Utils.libsOnlyLinkerFlags(PkgDB().getVariableAndDeps(self.mArgs, "Libs")))
+         Utils.printList(Utils.libsOnlyLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
 
       if self.mOptions.libs_only_L:
-         Utils.printList(Utils.libDirsOnlyLinkerFlags(PkgDB().getVariableAndDeps(self.mArgs, "Libs")))
+         Utils.printList(Utils.libDirsOnlyLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
 
-      #if self.mOptions.static:
-      #   Utils.printList(Utils.stripDupLinkerFlags(PkgDB().getVariablesAndPrivateDeps(self.mArgs, ("Libs", "Libs.private"))))
+      if self.mOptions.static:
+         Utils.printList(Utils.stripDupLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs", "Libs.private"], True)))
 
       if self.mOptions.cflags:
-         Utils.printList(Utils.stripDupIncludeFlags(PkgDB().getVariableAndDeps(self.mArgs, "Cflags")))
+         Utils.printList(Utils.stripDupIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
 
 #      if not self.mOptions.list_all:
 #        print PkgDB().getPkgList
