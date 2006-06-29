@@ -109,6 +109,32 @@ class Utils:
       return new_list
    stripDupIncludeFlags = staticmethod(stripDupIncludeFlags)
 
+   def cflagsOnlyDirIncludeFlags(flag_list):
+      # List is constructed as such ("-I/inc", "-fno-static-blah")
+      # We do slightly dumb stripping though
+      inc_list = []
+      for flg in flag_list:
+         flg = flg.strip()
+         if flg not in inc_list:
+            if len(flg) > 0:
+               if flg.startswith("-I"):
+                  inc_list.append(flg)
+      return inc_list
+   cflagsOnlyDirIncludeFlags = staticmethod(cflagsOnlyDirIncludeFlags)
+
+   def cflagsOnlyOtherIncludeFlags(flag_list):
+      # List is constructed as such ("-I/inc", "-fno-static-blah")
+      # We do slightly dumb stripping though
+      extra_list = []
+      for flg in flag_list:
+         flg = flg.strip()
+         if flg not in extra_list:
+            if len(flg) > 0:
+               if not flg.startswith("-I"):
+                  extra_list.append(flg)
+      return extra_list
+   cflagsOnlyOtherIncludeFlags = staticmethod(cflagsOnlyOtherIncludeFlags)
+
    def libsOnlyLinkerFlags(flag_list):
      # List is constructed as such ("-L /path", "-L/sfad", "-fpge", "-l pg", "-lpg")
       # We do slightly dumb stripping though
@@ -740,7 +766,7 @@ class OptionsEvaluator:
          Utils.printList(Utils.libDirsOnlyLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
 
       if self.mOptions.libs_only_other:
-         Utils.printList(Utils.libDirsOnlyOtherLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
+         Utils.printList(Utils.libsOnlyOtherLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
 
       if self.mOptions.cflags:
          Utils.printList(Utils.stripDupIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
@@ -750,6 +776,7 @@ class OptionsEvaluator:
 
       if self.mOptions.cflags_only_other:
          Utils.printList(Utils.cflagsOnlyOtherIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
+
 #      if not self.mOptions.list_all:
 #        print PkgDB().getPkgList
 
