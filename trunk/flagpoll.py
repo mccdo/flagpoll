@@ -285,7 +285,8 @@ class DepResolutionSystem(object):
       self.mAgentDict[agent.getName()] = agent
 
    def addResolveAgent(self, agent):
-      self.mResolveAgents.append(agent)
+      if agent not in self.mResolveAgents:
+         self.mResolveAgents.append(agent)
 
    def isSatisfied(self):
       return self.mSatisfied
