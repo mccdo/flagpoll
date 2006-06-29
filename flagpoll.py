@@ -47,10 +47,14 @@ class Utils:
    def getPathList():
       #TODO: expand LD_LIBRARY_PATH to 64/32/etc???
       pkg_cfg_dir = []
+      flg_cfg_dir = []
       ld_path = []
 
       if os.environ.has_key("PKG_CONFIG_DIR"):
          pkg_cfg_dir = os.environ["PKG_CONFIG_DIR"].split(os.pathsep)
+
+      if os.environ.has_key("FLG_CONFIG_DIR"):
+         flg_cfg_dir = os.environ["FLG_CONFIG_DIR"].split(os.pathsep)
 
       if os.environ.has_key("LD_LIBRARY_PATH"):
          ld_path = os.environ["LD_LIBRARY_PATH"].split(os.pathsep)
@@ -59,6 +63,7 @@ class Utils:
       path_list = ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
       path_list = [p for p in path_list if os.path.exists(p)]
       path_list.extend(pkg_cfg_dir)
+      path_list.extend(flg_cfg_dir)
       path_list.extend(ld_path)
       flagDBG().out(flagDBG.INFO, "Utils.getPathList",
                     "Using path list: " + str(path_list))
@@ -182,6 +187,38 @@ class Utils:
             list_string+=" "
       print list_string
    printList = staticmethod(printList)
+
+   def parsePcFile(filename):
+      lines = open(filename).readlines()
+      vars = {}
+      locals = {}
+      for line in lines:
+       line = line.strip()
+       if not line:
+         continue
+       elif ':' in line: # exported variable
+         name, val = line.split(':', 1)
+         name = name.strip()
+         val = val.strip()
+         if '$' in val:
+           try:
+             val = Template(val).substitute(locals)
+           except ValueError:
+            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid .pc file" % self.mName)
+         vars[name] = val
+       elif '=' in line: # local variable
+         name, val = line.split('=', 1)
+         name = name.strip()
+         val = val.strip()
+         if '$' in val:
+           try:
+             val = Template(val).substitute(locals)
+           except ValueError:
+            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid .pc file" % self.mName)
+         locals[name] = val
+      return vars
+   parsePcFile = staticmethod(parsePcFile)
+
 
 class flagDBG(object):
 #      Logging class is really easy to use
@@ -569,7 +606,8 @@ class PkgDB(object):
          return
       self.__initialized = True
       self.mPkgInfos = {}           # {pkg_name: List of package infos}
-      self.populatePkgInfoDB()
+      self.populatePkgInfoDBPcFiles()
+      self.populatePkgInfoDBFpcFiles()
 
    def __new__(type):
       if not '_the_instance' in type.__dict__:
@@ -638,26 +676,50 @@ class PkgDB(object):
                        "Process these pc files: %s" % str(glob_list))
          for g in glob_list: # Get key name and add file to value list in dictionary
             key = os.path.basename(g)[:-3]   # Strip .pc off the filename...rstrip no worky
-            pc_dict.setdefault(key,[]).append(g)            
-      
+            pc_dict.setdefault(key,[]).append(g)
       return pc_dict # { "key", [ "list", "of", "corresponding", "pc", "files"] }
 
-   def populatePkgInfoDB(self):
+   def populatePkgInfoDBPcFiles(self):
       dict_to_pop_from = self.buildPcFileDict()
       for (pkg,files) in dict_to_pop_from.iteritems():
-         self.mPkgInfos.setdefault(pkg,[]).append(PkgInfo(pkg, files))
+         self.mPkgInfos.setdefault(pkg,[]).append(PkgInfo(pkg, files[0], "pc"))
+
+   def buildFpcFileList(self):
+      """ Builds up a dictionary of {name: list of files for name} """
+      file_list = []
+      for p in Utils.getPathList():
+         glob_list = glob.glob(os.path.join(p, "*.fpc")) # List of .pc files in that directory
+         flagDBG().out(flagDBG.VERBOSE, "PkgDB.buildPcFileDict",
+                       "Process these fpc files: %s" % str(glob_list))
+         for g in glob_list:
+            file_list.append(g)
+      return file_list # [ "list", "of", "fpc", "files"] 
+
+   def populatePkgInfoDBFpcFiles(self):
+      list_to_add = self.buildFpcFileList()
+      for file in list_to_add:
+         var_dict = Utils.parsePcFile(file)
+         if not var_dict.has_key("Provides"):
+            flagDBG().out(flagDBG.ERROR, "PkgDB.populate", "%s missing Provides" % str(file))
+         if not var_dict.has_key("Arch"):
+            flagDBG().out(flagDBG.ERROR, "PkgDB.populate", "%s missing Arch" % str(file))
+         for key in var_dict["Provides"].split(" "):
+            self.mPkgInfos.setdefault(key,[]).append(PkgInfo(key, file, "fpc", var_dict))
 
 class PkgInfo:
    """ Holds the information for a package file on the system. These however
        are evaluated when the need arises.
    """
 
-   def __init__(self, name, fileList, version="None"):
+   def __init__(self, name, file, type, varDict={}):
       self.mName = name
-      self.mVersion = version
-      self.mFileList = fileList
+      self.mFile = file
       self.mIsEvaluated = False
-      self.mVariableDict = {}
+      self.mType = type
+      self.mVariableDict = varDict
+      if self.mType == "fpc":
+         self.mIsEvaluated = True
+      
 
    def getVariable(self, variable):
       self.evaluate()
@@ -667,46 +729,14 @@ class PkgInfo:
       return self.mName
 
    def evaluate(self):
-      # TODO: Do more than pkg-config and parse all same name files
       if not self.mIsEvaluated:
          flagDBG().out(flagDBG.INFO, "PkgInfo.evaluate", "Evaluating %s" % self.mName)
-         self.mVariableDict= self.parse(self.mFileList[0])
+         self.mVariableDict= Utils.parsePcFile(self.mFile)
          self.mIsEvaluated = True
    
    def getInfo(self):
       self.evaluate()
       return self.mVariableDict
-   
-   def parse(self, filename):
-      lines = open(filename).readlines()
-      vars = {}
-      locals = {}
-      for line in lines:
-       line = line.strip()
-       if not line:
-         continue
-       elif ':' in line: # exported variable
-         name, val = line.split(':', 1)
-         name = name.strip()
-         val = val.strip()
-         if '$' in val:
-           try:
-             val = Template(val).substitute(locals)
-           except ValueError:
-            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid .pc file" % self.mName)
-         vars[name] = val
-       elif '=' in line: # local variable
-         name, val = line.split('=', 1)
-         name = name.strip()
-         val = val.strip()
-         if '$' in val:
-           try:
-             val = Template(val).substitute(locals)
-           except ValueError:
-            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid .pc file" % self.mName)
-         locals[name] = val
-      return vars
-
 
 class OptionsEvaluator:
    
