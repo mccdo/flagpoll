@@ -31,7 +31,7 @@
 
 from optparse import OptionParser
 from string import Template
-import sys, os, glob, os.path, copy
+import sys, os, glob, os.path, copy, platform
 pj = os.path.join
 
 class Utils:
@@ -293,6 +293,27 @@ class DepResolutionSystem(object):
 
    def addFilter(self, filter):
       self.mFilters.append(filter)
+
+   def makeRequireFilter(self, requires):
+      arch_list = []
+      arch_list.append("no_arch")
+      arch_list.append("")
+      if platform.system() == "Linux":
+         if requires == "64":
+            arch_list.append("x86_64")
+         if requires == "32":
+            arch_list.append("i386")
+            arch_list.append("i586")
+            arch_list.append("i686")
+      if platform.system() == "Darwin":
+         if requires == "64":
+            arch_list.append("ppc64")
+         if requires == "32":
+            arch_list.append("ppc")
+      
+      new_filter = Filter("Arch", lambda x: x in arch_list)
+      self.addFilter(new_filter)
+
 
    def createAgent(self, name):
       if self.checkAgentExists(name):
@@ -761,6 +782,9 @@ class OptionsEvaluator:
          flagDBG().setLevel(flagDBG.VERBOSE)
          Utils.printList(PkgDB().getInfo(self.mArgs[0]))
 
+      if self.mOptions.require:
+         DepResolutionSystem().makeRequireFilter(self.mOptions.require)
+
       if self.mOptions.exists:
          print PkgDB().exists(self.mArgs[0])
 
@@ -824,6 +848,8 @@ class OptionsEvaluator:
                         help="output version for package")
       parser.add_option("--version", action="store_true", dest="version", 
                         help="output version of pkg-config")
+      parser.add_option("--require", dest="require", 
+                        help="adds additional requirements for packages ex. 32/64")
       parser.add_option("--libs", action="store_true", dest="libs", 
                         help="output all linker flags")
       parser.add_option("--static", action="store_true", dest="static", 
