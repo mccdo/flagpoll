@@ -703,8 +703,13 @@ class PkgDB(object):
             flagDBG().out(flagDBG.ERROR, "PkgDB.populate", "%s missing Provides" % str(file))
          if not var_dict.has_key("Arch"):
             flagDBG().out(flagDBG.ERROR, "PkgDB.populate", "%s missing Arch" % str(file))
-         for key in var_dict["Provides"].split(" "):
-            self.mPkgInfos.setdefault(key,[]).append(PkgInfo(key, file, "fpc", var_dict))
+         provides_string = var_dict["Provides"]
+         provides_string = provides_string.replace(',', ' ')
+         provides_string = provides_string.replace('(', ' ')
+         provides_string = provides_string.replace(')', ' ')
+         for key in provides_string.split(" "):
+            if len(key) > 0:
+               self.mPkgInfos.setdefault(key,[]).append(PkgInfo(key, file, "fpc", var_dict))
 
 class PkgInfo:
    """ Holds the information for a package file on the system. These however
