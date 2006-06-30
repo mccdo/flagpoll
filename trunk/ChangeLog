@@ -1,5 +1,7 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+2006-06-29 dshipton     More filtering
+                        VERSION: 0.1.4
 2006-06-28 dshipton     Multiple Package Polling capabilities
                         VERSION: 0.1.3
 2006-06-27 dshipton     Advanced flag polling and debug logging capabilities

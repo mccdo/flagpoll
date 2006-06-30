@@ -40,7 +40,7 @@ class Utils:
    def getFlagpollVersion():
       FLAGPOLL_MAJOR_VERSION = 0
       FLAGPOLL_MINOR_VERSION = 1
-      FLAGPOLL_PATCH_VERSION = 3
+      FLAGPOLL_PATCH_VERSION = 4
       return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
    getFlagpollVersion = staticmethod(getFlagpollVersion)
 
@@ -854,8 +854,8 @@ class OptionsEvaluator:
                         help="output all linker flags")
       parser.add_option("--static", action="store_true", dest="static", 
                         help="output linker flags for static linking")
-      parser.add_option("--short-errors", action="store_true", dest="short_errors", 
-                        help="print short errors")
+      #parser.add_option("--short-errors", action="store_true", dest="short_errors", 
+      #                  help="print short errors")
       parser.add_option("--libs-only-l", action="store_true", dest="libs_only_l", 
                         help="output -l flags")
       parser.add_option("--libs-only-other", action="store_true", dest="libs_only_other", 
@@ -870,36 +870,36 @@ class OptionsEvaluator:
                         help="output cflags not covered by the cflags-only-I option")
       parser.add_option("--exists", action="store_true", dest="exists", 
                         help="return 0 if the module(s) exist")
-      parser.add_option("--list-all", action="store_true", dest="list_all", 
-                        help="list all known packages")
+      #parser.add_option("--list-all", action="store_true", dest="list_all", 
+      #                  help="list all known packages")
       parser.add_option("--debug", action="store_true", dest="debug", 
                         help="show verbose debug information")
       parser.add_option("--info", action="store_true", dest="info", 
                         help="show information for packages")
-      parser.add_option("--print-errors", action="store_true", dest="print_errors", 
-                        help="show verbose information about missing or conflicting packages")
-      parser.add_option("--silence-errors", action="store_true", dest="silence_errors", 
-                        help="show no information about missing or conflicting packages")
-      parser.add_option("--uninstalled", action="store_true", dest="uninstalled", 
-                        help="return 0 if the uninstalled version of one or more module(s) or their dependencies will be used")
-      parser.add_option("--errors-to-stdout", action="store_true", dest="errors_to_stdout", 
-                        help="print errors from --print-errors to stdout not stderr")
-      parser.add_option("--print-provides", action="store_true", dest="print_provides", 
-                        help="print which packages the package provides")
-      parser.add_option("--print-requires", action="store_true", dest="print_requires", 
-                        help="print which packages the package requires")
+      #parser.add_option("--print-errors", action="store_true", dest="print_errors", 
+      #                  help="show verbose information about missing or conflicting packages")
+      #parser.add_option("--silence-errors", action="store_true", dest="silence_errors", 
+      #                  help="show no information about missing or conflicting packages")
+      #parser.add_option("--uninstalled", action="store_true", dest="uninstalled", 
+      #                  help="return 0 if the uninstalled version of one or more module(s) or their dependencies will be used")
+      #parser.add_option("--errors-to-stdout", action="store_true", dest="errors_to_stdout", 
+      #                  help="print errors from --print-errors to stdout not stderr")
+      #parser.add_option("--print-provides", action="store_true", dest="print_provides", 
+      #                  help="print which packages the package provides")
+      #parser.add_option("--print-requires", action="store_true", dest="print_requires", 
+      #                  help="print which packages the package requires")
       parser.add_option("--atleast-version", dest="atleast_version", 
                         help="return 0 if the module is at least version VERSION")
       parser.add_option("--exact-version", dest="exact_version", 
                         help="return 0 if the module is exactly version VERSION")
       parser.add_option("--max-version", dest="max_version", 
                         help="return 0 if the module is at no newer than version VERSION")
-      parser.add_option("--atleast-pkgconfig-version=VERSION", dest="atleast_pkgconfig_version", 
-                        help="require given version of pkg-config")
+      #parser.add_option("--atleast-pkgconfig-version=VERSION", dest="atleast_pkgconfig_version", 
+      #                  help="require given version of pkg-config")
       parser.add_option("--variable", dest="variable", 
                         help="get the value of a variable")
-      parser.add_option("--define-variable", dest="define_variable", 
-                        help="set the value of a variable")
+      #parser.add_option("--define-variable", dest="define_variable", 
+      #                  help="set the value of a variable")
       return parser
 
 
