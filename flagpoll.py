@@ -278,6 +278,7 @@ class DepResolutionSystem(object):
       self.mResolveAgents = []
       self.mAgentDict = {}
       self.mFilters = []
+      self.mResolveAgentFilters = []
       self.mInvalidPackageList = []
       self.mSatisfied = False
       self.mAgentChangeList = [] # list of those responsible for adding Filters
@@ -293,6 +294,9 @@ class DepResolutionSystem(object):
 
    def addFilter(self, filter):
       self.mFilters.append(filter)
+
+   def addResolveAgentFilter(self, filter):
+      self.mResolveAgentFilters.append(filter)
 
    def makeRequireFilter(self, requires):
       arch_list = []
@@ -345,6 +349,8 @@ class DepResolutionSystem(object):
    def addResolveAgent(self, agent):
       if agent not in self.mResolveAgents:
          self.mResolveAgents.append(agent)
+         for filt in self.mResolveAgentFilters:
+            agent.addFilter(filt)
 
    def isSatisfied(self):
       return self.mSatisfied
@@ -531,11 +537,11 @@ class PkgAgent:
 
    # Someone else usually places these on me
    # I keep track of those separately
-   def addFilter(self, Filter):
+   def addFilter(self, filter):
       flagDBG().out(flagDBG.VERBOSE, "PkgAgent.addFilter",
                     "Adding a Filter to %s" % self.mName)
       self.mFiltersChanged = True
-      self.mFilterList.append(Filter)
+      self.mFilterList.append(filter)
 
    def removeCurrentPackage(self):
       flagDBG().out(flagDBG.VERBOSE, "PkgAgent.removeCurrentPackage",
@@ -566,7 +572,7 @@ class PkgAgent:
 
    def updateFilters(self):
       for filt in self.mFilterList:
-         filt.filter(self.mViablePackageList)
+         self.mViablePackageList = filt.filter(self.mViablePackageList)
       if len(self.mViablePackageList) > 0:
          self.mCurrentPackage = self.mViablePackageList[0]
       else:
@@ -801,17 +807,17 @@ class OptionsEvaluator:
       if self.mOptions.atleast_version:
          atleast_version = self.mOptions.atleast_version
          atleast_filter = Filter("Version", lambda x: x >= atleast_version)
-         DepResolutionSystem().addFilter(atleast_filter)
+         DepResolutionSystem().addResolveAgentFilter(atleast_filter)
          
       if self.mOptions.max_version:
          max_version = self.mOptions.max_version
-         max_filter = Filter("Version", lambda x: x <= max_version)
-         DepResolutionSystem().addFilter(max_filter)
+         max_filter = Filter("Version", lambda x: x.startswith(max_version))
+         DepResolutionSystem().addResolveAgentFilter(max_filter)
          
       if self.mOptions.exact_version:
          exact_version = self.mOptions.exact_version
          exact_filter = Filter("Version", lambda x: x == exact_version)
-         DepResolutionSystem().addFilter(exact_filter)
+         DepResolutionSystem().addResolveAgentFilter(exact_filter)
 
       if self.mOptions.modversion:
          print PkgDB().getVariables(self.mArgs[0], ["Version"])
