@@ -809,9 +809,9 @@ class OptionsEvaluator:
          atleast_filter = Filter("Version", lambda x: x >= atleast_version)
          DepResolutionSystem().addResolveAgentFilter(atleast_filter)
          
-      if self.mOptions.max_version:
-         max_version = self.mOptions.max_version
-         max_filter = Filter("Version", lambda x: x.startswith(max_version))
+      if self.mOptions.max_release:
+         max_release = self.mOptions.max_release
+         max_filter = Filter("Version", lambda x: x.startswith(max_release))
          DepResolutionSystem().addResolveAgentFilter(max_filter)
          
       if self.mOptions.exact_version:
@@ -898,8 +898,8 @@ class OptionsEvaluator:
                         help="return 0 if the module is at least version VERSION")
       parser.add_option("--exact-version", dest="exact_version", 
                         help="return 0 if the module is exactly version VERSION")
-      parser.add_option("--max-version", dest="max_version", 
-                        help="return 0 if the module is at no newer than version VERSION")
+      parser.add_option("--max-release", dest="max_release", 
+                        help="return 0 if the module has a release that is version VERSION and will return the max")
       #parser.add_option("--atleast-pkgconfig-version=VERSION", dest="atleast_pkgconfig_version", 
       #                  help="require given version of pkg-config")
       parser.add_option("--variable", dest="variable", 
