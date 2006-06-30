@@ -6,6 +6,10 @@ Flag Poll is meant to be a drop in replacement for pkg-config. It was designed t
 ---- Use ----
 It is exactly the same as pkg-config usage with the following additions/considerations.
 
+--- Installation ---
+To install you need scons.
+scons prefix=/path/to/install install
+
 ---- Dependencies ----
 Python 2.4 or greater
 
