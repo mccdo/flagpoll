@@ -22,10 +22,5 @@ Python 2.4 or greater
 * Evaluated file format for incorporation of logic (more about this later)
 
 ---- Documentation ----
-
-pkg-config .pc file format BNF
-
-<pc-file> ::= <variables><pc-variables>
-<variables> ::= <variable-name><equals-sign><variable-data>|<variables>
-<pc-variables> ::= <pc-variable-name><colon><pc-variable-data>
-.......
+Available online at:
+https://realityforge.vrsource.org/view/FlagPoll/WebHome
