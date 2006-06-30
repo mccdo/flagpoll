@@ -895,11 +895,11 @@ class OptionsEvaluator:
       #parser.add_option("--print-requires", action="store_true", dest="print_requires", 
       #                  help="print which packages the package requires")
       parser.add_option("--atleast-version", dest="atleast_version", 
-                        help="return 0 if the module is at least version VERSION")
+                        help="return 0 if the module is at least version ATLEAST_VERSION")
       parser.add_option("--exact-version", dest="exact_version", 
-                        help="return 0 if the module is exactly version VERSION")
+                        help="return 0 if the module is exactly version EXACT_VERSION")
       parser.add_option("--max-release", dest="max_release", 
-                        help="return 0 if the module has a release that is version VERSION and will return the max")
+                        help="return 0 if the module has a release that has a version of MAX_RELEASE and will return the max")
       #parser.add_option("--atleast-pkgconfig-version=VERSION", dest="atleast_pkgconfig_version", 
       #                  help="require given version of pkg-config")
       parser.add_option("--variable", dest="variable", 
