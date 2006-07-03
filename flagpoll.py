@@ -909,9 +909,14 @@ class OptionsEvaluator:
       return parser
 
 
-# GO!
-my_dbg = flagDBG()
-my_dep_system = DepResolutionSystem()
-opt_evaluator = OptionsEvaluator()
-opt_evaluator.evaluateArgs()
-sys.exit(0)
+def main():
+   # GO!
+   # Initialize singletons and the start evaluating
+   my_dbg = flagDBG()
+   my_dep_system = DepResolutionSystem()
+   opt_evaluator = OptionsEvaluator()
+   opt_evaluator.evaluateArgs()
+   sys.exit(0)
+
+if __name__ == "__main__":
+   main()
