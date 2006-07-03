@@ -11,13 +11,9 @@ BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-buildroot
 
 %description
-The eject program allows the user to eject removable media
-(typically CD-ROMs, floppy disks or Iomega Jaz or Zip disks)
-using software control. Eject can also control some multi-
-disk CD changers and even some devices' auto-eject features.
-
-Install eject if you'd like to eject removable media using
-software control.
+Flagpoll is a program to help obtain options for third party software
+useful for compiling a users program.  It also can be used as asystem 
+for polling generic meta-data from installed software.
 
 %prep
 rm -rf $RPM_BUILD_ROOT
