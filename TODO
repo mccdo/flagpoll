@@ -1,0 +1,5 @@
+     TODO List:
+-----------------------
+- Change from using Template to something for Python 2.3
+- Pkg-config comparison chart
+- Better arg parsing for more complicated syntax (--exists a < 2.0 b < 3.2 )
