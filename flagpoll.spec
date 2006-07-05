@@ -30,7 +30,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_bindir}/flagpoll
-%{_bindir}/share/flagpoll/flagpoll.fpc
+%{_datadir}/flagpoll/flagpoll.fpc
 %doc README TODO LICENSE ChangeLog
 
 %changelog
