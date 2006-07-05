@@ -1,12 +1,12 @@
 Summary: Program for retrieving meta-data from installed packages.
 Name: flagpoll
 Version: 0.1.5
-Release: 2
+Release: 1
 License: GPL
 URL: https://realityforge.vrsource.org/view/FlagPoll/WebHome
 Group: System Environment/Base
-Source: flagpoll-0.1.4.tar.bz2
-Requires: python >= 2.4
+Source: flagpoll-0.1.5.tar.bz2
+Requires: python >= 2.3
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-buildroot
 
@@ -22,7 +22,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %install
 mkdir -p $RPM_BUILD_ROOT/usr
-mkdir -p $RPM_BUILD_ROOT/usr/bin
 scons prefix=$RPM_BUILD_ROOT/usr install
 
 %clean
@@ -31,8 +30,11 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_bindir}/flagpoll
+%{_bindir}/share/flagpoll/flagpoll.fpc
 %doc README TODO LICENSE ChangeLog
 
 %changelog
+* Wed Jul 05 2006 Daniel E. Shipton <dshipton@infiscape.com> 
+- install fpc file and depend on python 2.3
 * Fri Jun 30 2006 Daniel E. Shipton <dshipton@infiscape.com> 
 - initial specfile

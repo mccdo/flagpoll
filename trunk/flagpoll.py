@@ -54,7 +54,6 @@ class _multimap:
         except KeyError:
             return self._secondary[key]
 
-
 class _TemplateMetaclass(type):
     pattern = r"""
     %(delim)s(?:
@@ -75,7 +74,6 @@ class _TemplateMetaclass(type):
                 'id'    : cls.idpattern,
                 }
         cls.pattern = _re.compile(pattern, _re.IGNORECASE | _re.VERBOSE)
-
 
 class Template:
     """A string class for supporting $-substitutions."""
