@@ -1,6 +1,6 @@
 Summary: Program for retrieving meta-data from installed packages.
 Name: flagpoll
-Version: 0.1.4
+Version: 0.1.5
 Release: 2
 License: GPL
 URL: https://realityforge.vrsource.org/view/FlagPoll/WebHome
