@@ -1,8 +1,8 @@
      TODO List:
 -----------------------
-- Change from using Template to something for Python 2.3
-- Pkg-config comparison chart
 - Better arg parsing for more complicated syntax (--exists a < 2.0 b < 3.2 )
 - RPM and build that creates the neccesary flagpoll dirs for .fpc files
    - Install our .fpc files too
 - Build that will let you add additional directories to search
+- Make a man page for unix use
+- Build system work(make dirs that aren't there, etc)
