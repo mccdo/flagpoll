@@ -1,0 +1,5 @@
+     TODO List:
+-----------------------
+- Better arg parsing for more complicated syntax (--exists a < 2.0 b < 3.2 )
+- Build that will let you add additional directories to search
+- Make a man page for unix use
