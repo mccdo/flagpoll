@@ -25,7 +25,7 @@ SConsEnvironment.InstallPerm = InstallPerm
 SConsEnvironment.InstallProgram = lambda env, dest, files: InstallPerm(env, dest, files, 0755) 	 
 SConsEnvironment.InstallData = lambda env, dest, files: InstallPerm(env, dest, files, 0644)
 
-flagpoll_py = File('flagpoll.py')
+flagpoll_py = File('flagpoll')
 flagpoll_fpc = File('flagpoll.fpc')
 
 # Here are our installation paths:
