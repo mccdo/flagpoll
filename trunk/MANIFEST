@@ -2,6 +2,7 @@ flagpoll
 setup.cfg
 setup.py
 flagpoll.fpc
+fpcmaker.py
 ChangeLog
 README
 TODO
