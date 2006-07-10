@@ -1,8 +1,9 @@
+exclude fpcmaker.py
+exclude flagpoll.1
 flagpoll
 setup.cfg
 setup.py
 flagpoll.fpc
-fpcmaker.py
 ChangeLog
 README
 TODO
