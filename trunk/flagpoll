@@ -164,6 +164,8 @@ class Template:
 class Utils:
    # Holds collection of small utility functions
    
+   EXTRA_FLAGPOLL_SEARCH_PATHS = ""
+
    def getFlagpollVersion():
       FLAGPOLL_MAJOR_VERSION = 0
       FLAGPOLL_MINOR_VERSION = 1
@@ -187,10 +189,13 @@ class Utils:
          ld_path = os.environ["LD_LIBRARY_PATH"].split(os.pathsep)
          ld_path = [pj(p,'pkgconfig') for p in ld_path if os.path.exists(p)]         
 
+      extra_paths = Utils.EXTRA_FLAGPOLL_SEARCH_PATHS.split(os.pathsep)
+      extra_paths = [p for p in extra_paths if os.path.exists(p)]
       path_list = ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
       path_list = [p for p in path_list if os.path.exists(p)]
       path_list.extend(pkg_cfg_dir)
       path_list.extend(flg_cfg_dir)
+      path_list.extend(extra_paths)
       path_list.extend(ld_path)
       flagDBG().out(flagDBG.INFO, "Utils.getPathList",
                     "Using path list: " + str(path_list))
@@ -910,7 +915,10 @@ class OptionsEvaluator:
          sys.exit(1)
 
    def evaluateArgs(self):
-
+   
+      if self.mOptions.extra_paths:
+         Utils.EXTRA_FLAGPOLL_SEARCH_PATHS = Utils.EXTRA_FLAGPOLL_SEARCH_PATHS + ":" + self.mOptions.extra_paths
+      
       if self.mOptions.debug:
          flagDBG().setLevel(flagDBG.VERBOSE)
          Utils.printList(PkgDB().getInfo(self.mArgs[0]))
@@ -1009,6 +1017,8 @@ class OptionsEvaluator:
                         help="show verbose debug information")
       parser.add_option("--info", action="store_true", dest="info", 
                         help="show information for packages")
+      parser.add_option("--extra-paths", dest="extra_paths", 
+                        help="extra paths for flagpoll to search for meta-data files")
       #parser.add_option("--print-errors", action="store_true", dest="print_errors", 
       #                  help="show verbose information about missing or conflicting packages")
       #parser.add_option("--silence-errors", action="store_true", dest="silence_errors", 
