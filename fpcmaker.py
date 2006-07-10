@@ -37,18 +37,18 @@ import getopt
 
 ##String prompts for the input
 
-varPrompt = """Variables (one 'var_name: var_definition' per line,""" + \
+varPrompt = """Convience variables (one 'var_name: var_definition' per line,""" + \
             """ empty line when done)"""
 namePrompt = "Formal Name"
 descriptionPrompt = "Description"
 urlPrompt = "URL"
-providesPrompt = "Look-Up Names (Provides)"
-versionPrompt = "Version"
+providesPrompt = "One or more names to look package up by: (Provides)"
+versionPrompt = "Version (x.y.z)"
 architecturePrompt = "Architecture"
 requirePrompt = "Requires"
-libPrompt = "Standard Linking Flags/Libs"
-staticLibPrompt = "Static Linking Flags/Libs"
-compileFlagsPrompt = "Compile/Include Flags" 
+libPrompt = "Linker Flags (-lfoo -L/usr/lib)"
+staticLibPrompt = "Static Linking Flags/Libs (extra private libs)"
+compileFlagsPrompt = "Compile/Include Flags (-I/usr -fpge -O2)" 
 fileNamePrompt = "FPC File's Name"
 
 def usage():
