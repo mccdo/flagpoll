@@ -1,4 +1,4 @@
-Flag Poll
+Flagpoll
 ------------------------------
 ---- Background ----
 Flag Poll is meant to be a drop in replacement for pkg-config. It was designed to overcome the inherit limitations that pkg-config places on its use. Flag Poll will go far beyond the limits that pkg-config has constrained itself to.
