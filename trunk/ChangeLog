@@ -1,6 +1,7 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
 2006-07-10 dshipton     Added Jeff Groves contributed fpcmaker to repository
+                        VERSION: 0.1.6
 [Version 0.1.5 Released - 07.05.2006]==========================================
 2006-07-05 dshipton     Depends on python 2.3 now, snagged Template from 2.4
                         VERSION: 0.1.5
