@@ -346,7 +346,7 @@ class Utils:
            try:
              val = Template(val).safe_substitute(locals)
            except ValueError:
-            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid .pc file" % self.mName)
+            flagDBG().out(flagDBG.WARN, "PkgInfo.parse", "%s has an invalid .pc file" % self.mName)
          locals[name] = val
       return vars
    parsePcFile = staticmethod(parsePcFile)
@@ -859,9 +859,11 @@ class PkgDB(object):
       for file in list_to_add:
          var_dict = Utils.parsePcFile(file)
          if not var_dict.has_key("Provides"):
-            flagDBG().out(flagDBG.ERROR, "PkgDB.populate", "%s missing Provides" % str(file))
+            flagDBG().out(flagDBG.WARN, "PkgDB.populate", "%s missing Provides" % str(file))
+            continue
          if not var_dict.has_key("Arch"):
-            flagDBG().out(flagDBG.ERROR, "PkgDB.populate", "%s missing Arch" % str(file))
+            flagDBG().out(flagDBG.WARN, "PkgDB.populate", "%s missing Arch" % str(file))
+            continue
          provides_string = var_dict["Provides"]
          provides_string = provides_string.replace(',', ' ')
          provides_string = provides_string.replace('(', ' ')
