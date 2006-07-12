@@ -37,7 +37,7 @@ import getopt
 
 ##String prompts for the input
 
-varPrompt = """Convience variables (one 'var_name: var_definition' per line,""" + \
+varPrompt = """Convience variables (one 'var_name= var_definition' per line,""" + \
             """ empty line when done)"""
 namePrompt = "Formal Name"
 descriptionPrompt = "Description"
@@ -204,16 +204,16 @@ fileName, writeFile = checkFileName(fileName)
 if writeFile:
     fpc = open(fileName, 'w')
     fpc.write("%s" %(variables))
-    fpc.write("Name= %s\n" %(name))
-    fpc.write("Description= %s\n" %(description))
-    fpc.write("URL= %s\n" %(url))
-    fpc.write("Version= %s\n" %(version))
-    fpc.write("Provides= %s\n" %(provides))
-    fpc.write("Requires= %s\n" %(requires))
-    fpc.write("Arch= %s\n" %(architecture))
-    fpc.write("Libs= %s\n" %(libs))
-    fpc.write("Libs.private= %s\n" %(staticLib))
-    fpc.write("Cflags= %s\n" %(compileFlags))
+    fpc.write("Name: %s\n" %(name))
+    fpc.write("Description: %s\n" %(description))
+    fpc.write("URL: %s\n" %(url))
+    fpc.write("Version: %s\n" %(version))
+    fpc.write("Provides: %s\n" %(provides))
+    fpc.write("Requires: %s\n" %(requires))
+    fpc.write("Arch: %s\n" %(architecture))
+    fpc.write("Libs: %s\n" %(libs))
+    fpc.write("Libs.private: %s\n" %(staticLib))
+    fpc.write("Cflags: %s\n" %(compileFlags))
     fpc.close()
 
 ##TESTER: Print the file out.
