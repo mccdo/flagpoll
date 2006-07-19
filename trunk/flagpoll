@@ -293,7 +293,7 @@ class Utils:
          flg = flg.strip()
          if flg not in other_list:
             if len(flg) > 0:
-               if not flg.startswith("-l") and not flg.startswith("-L") and not flag.startswith("-R"):
+               if not flg.startswith("-l") and not flg.startswith("-L") and not flg.startswith("-R"):
                   other_list.append(flg)
       return other_list
    libsOnlyOtherLinkerFlags = staticmethod(libsOnlyOtherLinkerFlags) 
@@ -322,8 +322,8 @@ class Utils:
 
    def parsePcFile(filename):
       lines = open(filename).readlines()
-      vars = {}
-      locals = {}
+      fvars = {}
+      lokals = {}
       for line in lines:
        line = line.strip()
        if not line:
@@ -334,21 +334,21 @@ class Utils:
          val = val.strip()
          if '$' in val:
            try:
-             val = Template(val).safe_substitute(locals)
+             val = Template(val).safe_substitute(lokals)
            except ValueError:
-            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid .pc file" % self.mName)
-         vars[name] = val
+            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid .pc file" % filename)
+         fvars[name] = val
        elif '=' in line: # local variable
          name, val = line.split('=', 1)
          name = name.strip()
          val = val.strip()
          if '$' in val:
            try:
-             val = Template(val).safe_substitute(locals)
+             val = Template(val).safe_substitute(lokals)
            except ValueError:
-            flagDBG().out(flagDBG.WARN, "PkgInfo.parse", "%s has an invalid .pc file" % self.mName)
-         locals[name] = val
-      return vars
+            flagDBG().out(flagDBG.WARN, "PkgInfo.parse", "%s has an invalid .pc file" % filename)
+         lokals[name] = val
+      return fvars
    parsePcFile = staticmethod(parsePcFile)
 
 
@@ -491,8 +491,8 @@ class DepResolutionSystem(object):
       pkg_list = []
       agent_list = []
       for agent in self.mResolveAgents:
-         list = agent.getCurrentPackageList(agent_list)
-         pkg_list.extend(list)
+         list_of_pkgs = agent.getCurrentPackageList(agent_list)
+         pkg_list.extend(list_of_pkgs)
       self.mResolvedPackageList = pkg_list
       
 
@@ -680,7 +680,7 @@ class PkgAgent:
                     "Removing current package of %s" % self.mName)
       if self.mViablePackageList:
          ret_val = self.mViablePackageList[0] in self.mBasePackageList
-         del mViablePackageList[0]
+         del self.mViablePackageList[0]
          if self.mViablePackageList:
             self.mCurrentPackage = self.mViablePackageList[0]
          return ret_val
@@ -718,7 +718,7 @@ class PkgAgent:
          self.mCurrentPacakge = self.mViablePackageList[0]
       else:
          self.mCurrentPackage = []
-      self.mFilterList = self.mBaseFilters
+      self.mFilterList = DepResolutionSystem().getFilters()
       self.mAgentDependList = []
       self.mFiltersChanged = True
       return
@@ -856,13 +856,13 @@ class PkgDB(object):
 
    def populatePkgInfoDBFpcFiles(self):
       list_to_add = self.buildFpcFileList()
-      for file in list_to_add:
-         var_dict = Utils.parsePcFile(file)
+      for filename in list_to_add:
+         var_dict = Utils.parsePcFile(filename)
          if not var_dict.has_key("Provides"):
-            flagDBG().out(flagDBG.WARN, "PkgDB.populate", "%s missing Provides" % str(file))
+            flagDBG().out(flagDBG.WARN, "PkgDB.populate", "%s missing Provides" % str(filename))
             continue
          if not var_dict.has_key("Arch"):
-            flagDBG().out(flagDBG.WARN, "PkgDB.populate", "%s missing Arch" % str(file))
+            flagDBG().out(flagDBG.WARN, "PkgDB.populate", "%s missing Arch" % str(filename))
             continue
          provides_string = var_dict["Provides"]
          provides_string = provides_string.replace(',', ' ')
@@ -870,7 +870,7 @@ class PkgDB(object):
          provides_string = provides_string.replace(')', ' ')
          for key in provides_string.split(" "):
             if len(key) > 0:
-               self.mPkgInfos.setdefault(key,[]).append(PkgInfo(key, file, "fpc", var_dict))
+               self.mPkgInfos.setdefault(key,[]).append(PkgInfo(key, filename, "fpc", var_dict))
 
 class PkgInfo:
    """ Holds the information for a package file on the system. These however
