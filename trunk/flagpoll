@@ -165,6 +165,7 @@ class Utils:
    # Holds collection of small utility functions
    
    EXTRA_FLAGPOLL_SEARCH_PATHS = ""
+   path_list_cache = None                         # Cache of found path lists.  (only calcuate once)
 
    def getFlagpollVersion():
       FLAGPOLL_MAJOR_VERSION = 0
@@ -174,6 +175,9 @@ class Utils:
    getFlagpollVersion = staticmethod(getFlagpollVersion)
 
    def getPathList():
+      if None != Utils.path_list_cache:
+         return Utils.path_list_cache
+         
       #TODO: expand LD_LIBRARY_PATH to 64/32/etc???
       pkg_cfg_dir = []
       flg_cfg_dir = []
@@ -187,18 +191,20 @@ class Utils:
 
       if os.environ.has_key("LD_LIBRARY_PATH"):
          ld_path = os.environ["LD_LIBRARY_PATH"].split(os.pathsep)
-         ld_path = [pj(p,'pkgconfig') for p in ld_path if os.path.exists(p)]         
+         ld_path = [pj(p,'pkgconfig') for p in ld_path]         
 
       extra_paths = Utils.EXTRA_FLAGPOLL_SEARCH_PATHS.split(os.pathsep)
-      extra_paths = [p for p in extra_paths if os.path.exists(p)]
       path_list = ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig"]
-      path_list = [p for p in path_list if os.path.exists(p)]
       path_list.extend(pkg_cfg_dir)
       path_list.extend(flg_cfg_dir)
       path_list.extend(extra_paths)
       path_list.extend(ld_path)
+      flagDBG().out(flagDBG.VERBOSE, "Utils.getPathList",
+                    "Potential path list: " + str(path_list))
+      path_list = [p for p in path_list if os.path.exists(p)]
       flagDBG().out(flagDBG.INFO, "Utils.getPathList",
                     "Using path list: " + str(path_list))
+      Utils.path_list_cache = path_list
       return path_list
    getPathList = staticmethod(getPathList)
 
