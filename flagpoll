@@ -789,6 +789,16 @@ class PkgDB(object):
          else:
             flagDBG().out(flagDBG.ERROR, "PkgDB.getVariable", "Package %s not found." % name)
       return ret_list
+
+   def checkPackage(self, name):
+      flagDBG().out(flagDBG.INFO, "PkgDB.checkPackage", 
+                    "Finding " + str(name))
+      if self.mPkgInfos.has_key(name):
+         return True
+      else:
+         flagDBG().out(flagDBG.ERROR, "PkgDB.CheckPackage", "Package %s not found." % name)
+
+      return False
          
    def getVariablesAndDeps(self, pkg_list, variable_list):
       flagDBG().out(flagDBG.INFO, "PkgDB.getVariablesAndDeps", 
@@ -914,85 +924,327 @@ class OptionsEvaluator:
    
    def __init__(self):
       self.mOptParser = self.GetOptionParser()
-      (self.mOptions, self.mArgs) = self.mOptParser.parse_args()
-      if self.mOptions.version:
-         print "%s.%s.%s" % Utils.getFlagpollVersion()
-         sys.exit(0)
-      if len(self.mArgs) < 1:
-         self.mOptParser.print_help()
-         sys.exit(1)
+      #(self.mOptions, self.mArgs) = self.mOptParser.parse_args()
+      #if self.mOptions.version:
+      #   print "%s.%s.%s" % Utils.getFlagpollVersion()
+      #   sys.exit(0)
+      #if len(self.mArgs) < 1:
+      #   self.mOptParser.print_help()
+      #   sys.exit(1)
 
-   def evaluateArgs(self):
-   
-      if self.mOptions.extra_paths:
-         Utils.EXTRA_FLAGPOLL_SEARCH_PATHS = Utils.EXTRA_FLAGPOLL_SEARCH_PATHS + ":" + self.mOptions.extra_paths
+   # This is only the args....(first arg is stripped)
+   def evaluateArgs(self, args):
+
+      # Catch any args that need to be tended to immediately
+
+      # Process args in the order that they were recieved.  Some options are not
+      # shown below because they are sub-options of an option below (--strip-dups)
+
+      agent = None
+      num_args = len(args)
+      curr_arg = 0
+      output_options = []
+      output_single = []
+      while curr_arg < num_args:
       
-      if self.mOptions.debug:
-         flagDBG().setLevel(flagDBG.VERBOSE)
-         Utils.printList(PkgDB().getInfo(self.mArgs[0]))
+         if args[curr_arg].startswith("--atleast-version"):
+            val_start = args[curr_arg].find('=') + 1
+            atleast_version = args[curr_arg][val_start:]
+            atleast_filter = Filter("Version", lambda x: x >= atleast_version)
+            curr_arg = curr_arg + 1
+            if agent is not None:
+               agent.addFilter(atleast_filter)
+            else:
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+            continue
 
-      if self.mOptions.require:
-         DepResolutionSystem().makeRequireFilter(self.mOptions.require)
+         if args[curr_arg].startswith("--cflags-only-I"):
+            output_options.append("cflags-only-I")
+            curr_arg = curr_arg + 1
+            #Utils.printList(Utils.cflagsOnlyDirIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
+            continue
 
-      if self.mOptions.exists:
-         print PkgDB().exists(self.mArgs[0])
+         if args[curr_arg].startswith("--cflags-only-other"):
+            output_options.append("cflags-only-other")
+            curr_arg = curr_arg + 1
+            #Utils.printList(Utils.cflagsOnlyOtherIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
+            continue
 
-      if self.mOptions.info:
-         for pkg in self.mArgs:
-            Utils.printList(PkgDB().getInfo(pkg))
+         #This could be the catch all for the above ones to and then filter based on what is asked...
+         if args[curr_arg].startswith("--cflags"):
+            output_options.append("Cflags")
+            curr_arg = curr_arg + 1
+            #Utils.printList(Utils.stripDupIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
+            continue
 
-      if self.mOptions.variable:
-         Utils.printList(Utils.stripDupInList(PkgDB().getVariablesAndDeps(self.mArgs, [self.mOptions.variable])))
+         if args[curr_arg].startswith("--debug"):
+            flagDBG().setLevel(flagDBG.VERBOSE)
+            curr_arg = curr_arg + 1
+            continue
 
-      if self.mOptions.static:
-         DepResolutionSystem().setPrivateRequires(True)
+         if args[curr_arg].startswith("--extra-paths"):
+            Utils.EXTRA_FLAGPOLL_SEARCH_PATHS = Utils.EXTRA_FLAGPOLL_SEARCH_PATHS + ":" + self.mOptions.extra_paths
+            curr_arg = curr_arg + 1
+            continue
 
-      if self.mOptions.atleast_version:
-         atleast_version = self.mOptions.atleast_version
-         atleast_filter = Filter("Version", lambda x: x >= atleast_version)
-         DepResolutionSystem().addResolveAgentFilter(atleast_filter)
+         if args[curr_arg].startswith("--exact-version"):
+            val_start = args[curr_arg].find('=') + 1
+            exact_version = args[curr_arg][val_start:]
+            exact_filter = Filter("Version", lambda x: x == exact_version)
+            curr_arg = curr_arg + 1
+            if agent is not None:
+               agent.addFilter(exact_filter)
+            else:
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+            continue
+
+         if args[curr_arg].startswith("--exists"):
+            output_options.append("exists")
+            curr_arg = curr_arg + 1
+            print PkgDB().exists(self.mArgs[0])
+            continue
+
+         if args[curr_arg].startswith("--info"):
+            output_options.append("info")
+            curr_arg = curr_arg + 1
+            #for pkg in self.mArgs:
+            #   Utils.printList(PkgDB().getInfo(pkg))
+            continue
+
+         if args[curr_arg].startswith("--libs-only-l"):
+            output_options.append("libs-only-l")
+            curr_arg = curr_arg + 1
+            #Utils.printList(Utils.libsOnlyLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
+            continue
+
+         if args[curr_arg].startswith("--libs-only-L"):
+            output_options.append("libs-only-L")
+            curr_arg = curr_arg + 1
+            #Utils.printList(Utils.libDirsOnlyLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
+            continue
+
+         if args[curr_arg].startswith("--libs-only-other"):
+            output_options.append("libs-only-other")
+            curr_arg = curr_arg + 1
+            #Utils.printList(Utils.libsOnlyOtherLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
+            continue
+
+         #This could be the catch all for the above ones to and then filter based on what is asked...
+         if args[curr_arg].startswith("--libs"):
+            output_options.append("libs")
+            curr_arg = curr_arg + 1
+            #Utils.printList(Utils.stripDupLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
+            continue
+
+         if args[curr_arg].startswith("--list-all"):
+            curr_arg = curr_arg + 1
+            PkgDB().printAllPackages()
+            continue
+
+         if args[curr_arg].startswith("--require-all"):
+            rlen = len("--require-all")
+            req_string = args[curr_arg][rlen:]
+            req_string = req_string.replace('-','_')
+            curr_arg = curr_arg + 1
+            if req_string.find("<=") != -1:
+               op_start = req_string.find("<=")
+               req_var = req_string[:op_start]
+               req_val = req_string[op_start + 2:]
+               new_filter = Filter(req_var, lambda x: x <= req_val)
+               DepResolutionSystem().addFilter(new_filter)
+               continue
+            if req_string.find(">=") != -1:
+               op_start = req_string.find(">=")
+               req_var = req_string[:op_start]
+               req_val = req_string[op_start + 2:]
+               new_filter = Filter(req_var, lambda x: x >= req_val)
+               DepResolutionSystem().addFilter(new_filter)
+               continue
+            if req_string.find(">") != -1:
+               op_start = req_string.find(">")
+               req_var = req_string[:op_start]
+               req_val = req_string[op_start + 1:]
+               new_filter = Filter(req_var, lambda x: x > req_val)
+               DepResolutionSystem().addFilter(new_filter)
+               continue
+            if req_string.find("<") != -1:
+               op_start = req_string.find("<")
+               req_var = req_string[:op_start]
+               req_val = req_string[op_start + 1:]
+               new_filter = Filter(req_var, lambda x: x < req_val)
+               DepResolutionSystem().addFilter(new_filter)
+               continue
+            if req_string.find("=") != -1:
+               op_start = req_string.find("=")
+               req_var = req_string[:op_start]
+               req_val = req_string[op_start + 1:]
+               new_filter = Filter(req_var, lambda x: x == req_val)
+               DepResolutionSystem().addFilter(new_filter)
+               continue
+            if req_string.find("=") == -1:
+               new_filter = Filter(req_string, lambda x: len(x) > 0)
+               DepResolutionSystem().addFilter(new_filter)
+               continue
+
+            continue
+
+         if args[curr_arg].startswith("--require-"):
+            rlen = len("--require-")
+            req_string = args[curr_arg][rlen:]
+            req_string = req_string.replace('-','_')
+            curr_arg = curr_arg + 1
+            if req_string.find("<=") != -1:
+               op_start = req_string.find("<=")
+               req_var = req_string[:op_start]
+               req_val = req_string[op_start + 2:]
+               new_filter = Filter(req_var, lambda x: x <= req_val)
+               if agent is not None:
+                  agent.addFilter(new_filter)
+               else:
+                  flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               continue
+            if req_string.find(">=") != -1:
+               op_start = req_string.find(">=")
+               req_var = req_string[:op_start]
+               req_val = req_string[op_start + 2:]
+               new_filter = Filter(req_var, lambda x: x >= req_val)
+               if agent is not None:
+                  agent.addFilter(new_filter)
+               else:
+                  flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               continue
+            if req_string.find(">") != -1:
+               op_start = req_string.find(">")
+               req_var = req_string[:op_start]
+               req_val = req_string[op_start + 1:]
+               new_filter = Filter(req_var, lambda x: x > req_val)
+               if agent is not None:
+                  agent.addFilter(new_filter)
+               else:
+                  flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               continue
+            if req_string.find("<") != -1:
+               op_start = req_string.find("<")
+               req_var = req_string[:op_start]
+               req_val = req_string[op_start + 1:]
+               new_filter = Filter(req_var, lambda x: x < req_val)
+               if agent is not None:
+                  agent.addFilter(new_filter)
+               else:
+                  flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               continue
+            if req_string.find("=") != -1:
+               op_start = req_string.find("=")
+               req_var = req_string[:op_start]
+               req_val = req_string[op_start + 1:]
+               new_filter = Filter(req_var, lambda x: x == req_val)
+               if agent is not None:
+                  agent.addFilter(new_filter)
+               else:
+                  flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               continue
+            if req_string.find("=") == -1:
+               new_filter = Filter(req_string, lambda x: len(x) > 0)
+               if agent is not None:
+                  agent.addFilter(new_filter)
+               else:
+                  flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               continue
+
+            continue
+
+         if args[curr_arg].startswith("--require="):
+            val_start = args[curr_arg].find('=') + 1
+            req_var = args[curr_arg][val_start:]
+            curr_arg = curr_arg + 1
+            DepResolutionSystem().makeRequireFilter(req_var)
+            continue
+
+         if args[curr_arg].startswith("--modversion"):
+            curr_arg = curr_arg + 1
+            print PkgDB().getVariables(self.mArgs[0], ["Version"])
+            continue
+
+         if args[curr_arg].startswith("--exact-version"):
+            val_start = args[curr_arg].find('=') + 1
+            exact_version = args[curr_arg][val_start:]
+            exact_filter = Filter("Version", lambda x: x == exact_version)
+            curr_arg = curr_arg + 1
+            if agent is not None:
+               agent.addFilter(exact_filter)
+            else:
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+            continue
+
+         if args[curr_arg].startswith("--max-release"):
+            val_start = args[curr_arg].find('=') + 1
+            max_release = args[curr_arg][val_start:]
+            max_filter = Filter("Version", lambda x: x.startswith(max_release))
+            curr_arg = curr_arg + 1
+            if agent is not None:
+               agent.addFilter(max_filter)
+            else:
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+            continue
+
+         if args[curr_arg].startswith("--static"):
+            DepResolutionSystem().setPrivateRequires(True)
+            curr_arg = curr_arg + 1
+            continue
+
+         if args[curr_arg].startswith("--variable"):
+            val_start = args[curr_arg].find('=') + 1
+            fetch_var = args[curr_arg][val_start:]
+            output_options.append(fetch_var)
+            curr_arg = curr_arg + 1
+            #Utils.printList(Utils.stripDupInList(PkgDB().getVariablesAndDeps(self.mArgs, [self.mOptions.variable])))
+            continue
+
+         if args[curr_arg].startswith("--get-all"):
+            rlen = len("--get-all-")
+            get_string = args[curr_arg][rlen:]
+            get_string = get_string.replace('-','_')
+            output_options.append(get_string)
+            curr_arg = curr_arg + 1
+            continue
          
-      if self.mOptions.max_release:
-         max_release = self.mOptions.max_release
-         max_filter = Filter("Version", lambda x: x.startswith(max_release))
-         DepResolutionSystem().addResolveAgentFilter(max_filter)
-         
-      if self.mOptions.exact_version:
-         exact_version = self.mOptions.exact_version
-         exact_filter = Filter("Version", lambda x: x == exact_version)
-         DepResolutionSystem().addResolveAgentFilter(exact_filter)
+         if args[curr_arg].startswith("--get"):
+            rlen = len("--get-")
+            get_string = args[curr_arg][rlen:]
+            get_string = get_string.replace('-','_')
+            output_options.append(get_string)
+            curr_arg = curr_arg + 1
+            continue
 
-      if self.mOptions.modversion:
-         print PkgDB().getVariables(self.mArgs[0], ["Version"])
-         
-      if self.mOptions.libs:
-         Utils.printList(Utils.stripDupLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
+         if not args[curr_arg].startswith("--"):
+            name = args[curr_arg]
+            curr_arg = curr_arg + 1
+            if PkgDB().checkPackage(name):
+               agent = DepResolutionSystem().createAgent(name)
+               DepResolutionSystem().addResolveAgent(agent)
+            else:
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "Invalid Package %s" % name)
+               sys.exit(1)
 
-      if self.mOptions.libs_only_l:
-         Utils.printList(Utils.libsOnlyLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
 
-      if self.mOptions.libs_only_L:
-         Utils.printList(Utils.libDirsOnlyLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
-
-      if self.mOptions.libs_only_other:
-         Utils.printList(Utils.libsOnlyOtherLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
-
-      if self.mOptions.cflags:
-         Utils.printList(Utils.stripDupIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
-
-      if self.mOptions.cflags_only_I:
-         Utils.printList(Utils.cflagsOnlyDirIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
-
-      if self.mOptions.cflags_only_other:
-         Utils.printList(Utils.cflagsOnlyOtherIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
-
-#      if not self.mOptions.list_all:
-#        print PkgDB().getPkgList
-
+      DepResolutionSystem().resolveDeps()
+      pkgs = DepResolutionSystem().getPackages()
+      
+      #Process options here..............
+      
+      var_list = []
+      for pkg in pkgs:
+         if pkg:
+            for var in output_options:
+               print var + " " + pkg.getVariable(var)
+               var_list.extend(pkg.getVariable(var).split(' '))
+      print var_list
 
 
    def GetOptionParser(self):
       parser = OptionParser()
+      return parser
+"""
       parser.add_option("--modversion", action="store_true", dest="modversion", 
                         help="output version for package")
       parser.add_option("--version", action="store_true", dest="version", 
@@ -1003,8 +1255,6 @@ class OptionsEvaluator:
                         help="output all linker flags")
       parser.add_option("--static", action="store_true", dest="static", 
                         help="output linker flags for static linking")
-      #parser.add_option("--short-errors", action="store_true", dest="short_errors", 
-      #                  help="print short errors")
       parser.add_option("--libs-only-l", action="store_true", dest="libs_only_l", 
                         help="output -l flags")
       parser.add_option("--libs-only-other", action="store_true", dest="libs_only_other", 
@@ -1019,26 +1269,18 @@ class OptionsEvaluator:
                         help="output cflags not covered by the cflags-only-I option")
       parser.add_option("--exists", action="store_true", dest="exists", 
                         help="return 0 if the module(s) exist")
-      #parser.add_option("--list-all", action="store_true", dest="list_all", 
-      #                  help="list all known packages")
+      parser.add_option("--list-all", action="store_true", dest="list_all", 
+                        help="list all known packages")
       parser.add_option("--debug", action="store_true", dest="debug", 
                         help="show verbose debug information")
       parser.add_option("--info", action="store_true", dest="info", 
                         help="show information for packages")
       parser.add_option("--extra-paths", dest="extra_paths", 
                         help="extra paths for flagpoll to search for meta-data files")
-      #parser.add_option("--print-errors", action="store_true", dest="print_errors", 
-      #                  help="show verbose information about missing or conflicting packages")
-      #parser.add_option("--silence-errors", action="store_true", dest="silence_errors", 
-      #                  help="show no information about missing or conflicting packages")
-      #parser.add_option("--uninstalled", action="store_true", dest="uninstalled", 
-      #                  help="return 0 if the uninstalled version of one or more module(s) or their dependencies will be used")
-      #parser.add_option("--errors-to-stdout", action="store_true", dest="errors_to_stdout", 
-      #                  help="print errors from --print-errors to stdout not stderr")
-      #parser.add_option("--print-provides", action="store_true", dest="print_provides", 
-      #                  help="print which packages the package provides")
-      #parser.add_option("--print-requires", action="store_true", dest="print_requires", 
-      #                  help="print which packages the package requires")
+      parser.add_option("--print-provides", action="store_true", dest="print_provides", 
+                        help="print which packages the package provides")
+      parser.add_option("--print-requires", action="store_true", dest="print_requires", 
+                        help="print which packages the package requires")
       parser.add_option("--atleast-version", dest="atleast_version", 
                         help="return 0 if the module is at least version ATLEAST_VERSION")
       parser.add_option("--exact-version", dest="exact_version", 
@@ -1051,16 +1293,17 @@ class OptionsEvaluator:
                         help="get the value of a variable")
       #parser.add_option("--define-variable", dest="define_variable", 
       #                  help="set the value of a variable")
-      return parser
+"""
 
 
 def main():
    # GO!
    # Initialize singletons and the start evaluating
+   print sys.argv[1:]
    my_dbg = flagDBG()
    my_dep_system = DepResolutionSystem()
    opt_evaluator = OptionsEvaluator()
-   opt_evaluator.evaluateArgs()
+   opt_evaluator.evaluateArgs(sys.argv[1:])
    sys.exit(0)
 
 if __name__ == "__main__":
