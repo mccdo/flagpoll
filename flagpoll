@@ -943,8 +943,8 @@ class OptionsEvaluator:
       agent = None
       num_args = len(args)
       curr_arg = 0
-      output_options = []
-      output_single = []
+      output_options = [] # (option, name/"")
+      important_options = [] # ones that need special attention
       while curr_arg < num_args:
       
          if args[curr_arg].startswith("--atleast-version"):
@@ -959,22 +959,20 @@ class OptionsEvaluator:
             continue
 
          if args[curr_arg].startswith("--cflags-only-I"):
-            output_options.append("cflags-only-I")
+            output_options.append(("cflags-only-I", ""))
             curr_arg = curr_arg + 1
-            #Utils.printList(Utils.cflagsOnlyDirIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
             continue
 
          if args[curr_arg].startswith("--cflags-only-other"):
-            output_options.append("cflags-only-other")
+            output_options.append(("cflags-only-other", ""))
             curr_arg = curr_arg + 1
-            #Utils.printList(Utils.cflagsOnlyOtherIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
             continue
 
          #This could be the catch all for the above ones to and then filter based on what is asked...
+         #For clarity of course...
          if args[curr_arg].startswith("--cflags"):
-            output_options.append("Cflags")
+            output_options.append(("cflags", ""))
             curr_arg = curr_arg + 1
-            #Utils.printList(Utils.stripDupIncludeFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Cflags"])))
             continue
 
          if args[curr_arg].startswith("--debug"):
@@ -999,41 +997,34 @@ class OptionsEvaluator:
             continue
 
          if args[curr_arg].startswith("--exists"):
-            output_options.append("exists")
+            important_options.append("exists")
             curr_arg = curr_arg + 1
-            print PkgDB().exists(self.mArgs[0])
             continue
 
          if args[curr_arg].startswith("--info"):
-            output_options.append("info")
+            output_options.append(("info", ""))
             curr_arg = curr_arg + 1
-            #for pkg in self.mArgs:
-            #   Utils.printList(PkgDB().getInfo(pkg))
             continue
 
          if args[curr_arg].startswith("--libs-only-l"):
-            output_options.append("libs-only-l")
+            output_options.append(("libs-only-l", ""))
             curr_arg = curr_arg + 1
-            #Utils.printList(Utils.libsOnlyLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
             continue
 
          if args[curr_arg].startswith("--libs-only-L"):
-            output_options.append("libs-only-L")
+            output_options.append(("libs-only-L", ""))
             curr_arg = curr_arg + 1
-            #Utils.printList(Utils.libDirsOnlyLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
             continue
 
          if args[curr_arg].startswith("--libs-only-other"):
-            output_options.append("libs-only-other")
+            output_options.append(("libs-only-other", ""))
             curr_arg = curr_arg + 1
-            #Utils.printList(Utils.libsOnlyOtherLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
             continue
 
          #This could be the catch all for the above ones to and then filter based on what is asked...
          if args[curr_arg].startswith("--libs"):
-            output_options.append("libs")
+            output_options.append(("libs", ""))
             curr_arg = curr_arg + 1
-            #Utils.printList(Utils.stripDupLinkerFlags(PkgDB().getVariablesAndDeps(self.mArgs, ["Libs"])))
             continue
 
          if args[curr_arg].startswith("--list-all"):
@@ -1195,16 +1186,16 @@ class OptionsEvaluator:
          if args[curr_arg].startswith("--variable"):
             val_start = args[curr_arg].find('=') + 1
             fetch_var = args[curr_arg][val_start:]
-            output_options.append(fetch_var)
+            if agent is not None:
+               output_options.append((fetch_var, agent.getName()))
             curr_arg = curr_arg + 1
-            #Utils.printList(Utils.stripDupInList(PkgDB().getVariablesAndDeps(self.mArgs, [self.mOptions.variable])))
             continue
 
          if args[curr_arg].startswith("--get-all"):
             rlen = len("--get-all-")
             get_string = args[curr_arg][rlen:]
             get_string = get_string.replace('-','_')
-            output_options.append(get_string)
+            output_options.append((get_string, ""))
             curr_arg = curr_arg + 1
             continue
          
@@ -1212,7 +1203,8 @@ class OptionsEvaluator:
             rlen = len("--get-")
             get_string = args[curr_arg][rlen:]
             get_string = get_string.replace('-','_')
-            output_options.append(get_string)
+            if agent is not None:
+               output_options.append((get_string, agent.getName()))
             curr_arg = curr_arg + 1
             continue
 
@@ -1229,16 +1221,55 @@ class OptionsEvaluator:
 
       DepResolutionSystem().resolveDeps()
       pkgs = DepResolutionSystem().getPackages()
+      if len(pkgs) == 0:
+         flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No valid configurations found")
+         sys.exit(1)
       
+      #print output_options
+      #output_options = []
+      #output_single = []
       #Process options here..............
-      
+      for option in output_options:
+         if option[0] == "cflags":
+            Utils.printList(Utils.stripDupIncludeFlags(self.getVarFromPkgs("Cflags", pkgs, option[1])))
+         elif option[0] == "cflags-only-I":
+            Utils.printList(Utils.cflagsOnlyDirIncludeFlags(self.getVarFromPkgs("Cflags", pkgs, option[1])))
+         elif option[0] == "cflags-only-other":
+            Utils.printList(Utils.cflagsOnlyOtherIncludeFlags(self.getVarFromPkgs("Cflags", pkgs, option[1])))
+         elif option[0] == "libs-only-l":
+            Utils.printList(Utils.libsOnlyLinkerFlags(self.getVarFromPkgs("Libs", pkgs, option[1])))
+         elif option[0] == "libs-only-L":
+            Utils.printList(Utils.libDirsOnlyLinkerFlags(self.getVarFromPkgs("Libs", pkgs, option[1])))
+         elif option[0] == "libs-only-other":
+            Utils.printList(Utils.libsOnlyOtherLinkerFlags(self.getVarFromPkgs("Libs", pkgs, option[1])))
+         elif option[0] == "libs":
+            Utils.printList(Utils.stripDupLinkerFlags(self.getVarFromPkgs("Libs", pkgs, option[1])))
+         else:
+            Utils.printList(Utils.stripDupInList(self.getVarFromPkgs(option[0], pkgs, option[1])))
+            
+
+   def getVarFromPkgs(self, var, pkgs, pkg_name=""):
       var_list = []
-      for pkg in pkgs:
-         if pkg:
-            for var in output_options:
-               print var + " " + pkg.getVariable(var)
+      ext_vars = []
+      if var == "Libs":
+         if DepResolutionSystem().checkPrivateRequires:
+            ext_vars.append("Libs.private")
+
+      if pkg_name == "":
+         for pkg in pkgs:
+            if pkg:
                var_list.extend(pkg.getVariable(var).split(' '))
-      print var_list
+               for extra_var in ext_vars:
+                  var_list.extend(pkg.getVariable(extra_var).split(' '))
+      else:
+         for pkg in pkgs:
+            if pkg:
+               if pkg.getName() == pkg_name:
+                  var_list.extend(pkg.getVariable(var).split(' '))
+                  for extra_var in ext_vars:
+                     var_list.extend(pkg.getVariable(extra_var).split(' '))
+
+      return var_list
 
 
    def GetOptionParser(self):
@@ -1299,7 +1330,7 @@ class OptionsEvaluator:
 def main():
    # GO!
    # Initialize singletons and the start evaluating
-   print sys.argv[1:]
+   #print sys.argv[1:]
    my_dbg = flagDBG()
    my_dep_system = DepResolutionSystem()
    opt_evaluator = OptionsEvaluator()
