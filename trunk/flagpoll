@@ -170,8 +170,8 @@ class Utils:
 
    def getFlagpollVersion():
       FLAGPOLL_MAJOR_VERSION = 0
-      FLAGPOLL_MINOR_VERSION = 1
-      FLAGPOLL_PATCH_VERSION = 6
+      FLAGPOLL_MINOR_VERSION = 2
+      FLAGPOLL_PATCH_VERSION = 0
       return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
    getFlagpollVersion = staticmethod(getFlagpollVersion)
 
@@ -956,7 +956,10 @@ class PkgInfo:
 class OptionsEvaluator:
    
    def __init__(self):
-      self.mOptParser = self.GetOptionParser()
+      #self.mOptParser = self.GetOptionParser()
+      #self.mOptParser.print_help()
+      if sys.argv < 1:
+         self.printHelp()
       #(self.mOptions, self.mArgs) = self.mOptParser.parse_args()
       #if self.mOptions.version:
       #   print "%s.%s.%s" % Utils.getFlagpollVersion()
@@ -980,6 +983,9 @@ class OptionsEvaluator:
             val_start = option.find('=') + 1
             file = option[val_start:]
             Utils.EXTRA_FLAGPOLL_FILES = Utils.EXTRA_FLAGPOLL_FILES + ":" + file
+         elif option.startswith("--help"):
+            self.printHelp()
+            sys.exit(0)
             
 
       agent = None
@@ -1331,64 +1337,55 @@ class OptionsEvaluator:
                   var_list.extend(pkg.getVariable(var).split(' '))
                   for extra_var in ext_vars:
                      var_list.extend(pkg.getVariable(extra_var).split(' '))
-
       return var_list
 
-
-   def GetOptionParser(self):
-      parser = OptionParser()
-      return parser
-"""
-      parser.add_option("--modversion", action="store_true", dest="modversion", 
-                        help="output version for package")
-      parser.add_option("--version", action="store_true", dest="version", 
-                        help="output version of pkg-config")
-      parser.add_option("--require", dest="require", 
-                        help="adds additional requirements for packages ex. 32/64")
-      parser.add_option("--libs", action="store_true", dest="libs", 
-                        help="output all linker flags")
-      parser.add_option("--static", action="store_true", dest="static", 
-                        help="output linker flags for static linking")
-      parser.add_option("--libs-only-l", action="store_true", dest="libs_only_l", 
-                        help="output -l flags")
-      parser.add_option("--libs-only-other", action="store_true", dest="libs_only_other", 
-                        help="output other libs (e.g. -pthread)")
-      parser.add_option("--libs-only-L", action="store_true", dest="libs_only_L", 
-                        help="output -L flags")
-      parser.add_option("--cflags", action="store_true", dest="cflags", 
-                        help="output all pre-processor and compiler flags")
-      parser.add_option("--cflags-only-I", action="store_true", dest="cflags_only_I", 
-                        help="output -I flags")
-      parser.add_option("--cflags-only-other ", action="store_true", dest="cflags_only_other", 
-                        help="output cflags not covered by the cflags-only-I option")
-      parser.add_option("--exists", action="store_true", dest="exists", 
-                        help="return 0 if the module(s) exist")
-      parser.add_option("--list-all", action="store_true", dest="list_all", 
-                        help="list all known packages")
-      parser.add_option("--debug", action="store_true", dest="debug", 
-                        help="show verbose debug information")
-      parser.add_option("--info", action="store_true", dest="info", 
-                        help="show information for packages")
-      parser.add_option("--extra-paths", dest="extra_paths", 
-                        help="extra paths for flagpoll to search for meta-data files")
-      parser.add_option("--print-provides", action="store_true", dest="print_provides", 
-                        help="print which packages the package provides")
-      parser.add_option("--print-requires", action="store_true", dest="print_requires", 
-                        help="print which packages the package requires")
-      parser.add_option("--atleast-version", dest="atleast_version", 
-                        help="return 0 if the module is at least version ATLEAST_VERSION")
-      parser.add_option("--exact-version", dest="exact_version", 
-                        help="return 0 if the module is exactly version EXACT_VERSION")
-      parser.add_option("--max-release", dest="max_release", 
-                        help="return 0 if the module has a release that has a version of MAX_RELEASE and will return the max")
-      #parser.add_option("--atleast-pkgconfig-version=VERSION", dest="atleast_pkgconfig_version", 
-      #                  help="require given version of pkg-config")
-      parser.add_option("--variable", dest="variable", 
-                        help="get the value of a variable")
-      #parser.add_option("--define-variable", dest="define_variable", 
-      #                  help="set the value of a variable")
-"""
-
+   def printHelp(self):
+      print "usage: flagpoll pkg options [pkg options] [generic options]"
+      print " "
+      print "generic options:"
+      print "  --help                show this help message and exit"
+      print "  --version             output version of flagpoll"
+      print "  --list-all            list all known packages"
+      print "  --debug               show verbose debug information"
+      print "  --extra-paths=EXTRA_PATHS"
+      print "                        extra paths for flagpoll to search for meta-data files"
+      print " "
+      print "options:"
+      print "  --modversion          output version for package"
+      print "  --require=REQUIRE     adds additional requirements for packages ex. 32/64"
+      print "  --libs                output all linker flags"
+      print "  --static              output linker flags for static linking"
+      print "  --libs-only-l         output -l flags"
+      print "  --libs-only-other     output other libs (e.g. -pthread)"
+      print "  --libs-only-L         output -L flags"
+      print "  --cflags              output all pre-processor and compiler flags"
+      print "  --cflags-only-I       output -I flags"
+      print "  --cflags-only-other   output cflags not covered by the cflags-only-I option"
+      print "  --exists              return 0 if the module(s) exist"
+      print "  --from-file=FILE      use the specified FILE for the package"
+      print "  --info                show information for packages"
+      print "  --print-provides      print which packages the package provides"
+      print "  --print-requires      print which packages the package requires"
+      print "  --atleast-version=ATLEAST_VERSION"
+      print "                        return 0 if the module is at least version"
+      print "                        ATLEAST_VERSION"
+      print "  --exact-version=EXACT_VERSION"
+      print "                        return 0 if the module is exactly version"
+      print "                        EXACT_VERSION"
+      print "  --max-release=MAX_RELEASE"
+      print "                        return 0 if the module has a release that has a"
+      print "                        version of MAX_RELEASE and will return the max"
+      print "  --variable=VARIABLE   get the value of a variable"
+      print " "
+      print "dynamic options(replace VAR with a variable you want to get/filter on)"
+      print "  --get-VAR             get VAR from package"
+      print "  --get-all-VAR         get VAR from package and its deps"
+      print "  --require-VAR[<,>,=VAL]"
+      print "                        require that a var is defined for a package"
+      print "                        or optionally use equality operators against VAL"
+      print "  --require-all-VAR[<,>,=VAL]"
+      print "                        require that a var is defined for all packages"
+      print "                        or optionally use equality operators against VAL"
 
 def main():
    # GO!

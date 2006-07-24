@@ -1,5 +1,8 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+2006-07-24 dshipton     Added --from-file and by-reference bug squashing
+                        VERSION: 0.2.0
+2006-07-20 dshipton     Added generic filtering from command line
 [Version 0.1.6 Released - 07.10.2006]==========================================
 2006-07-10 dshipton     Added Jeff Groves contributed fpcmaker to repository
                         VERSION: 0.1.6
