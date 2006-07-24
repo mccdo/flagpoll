@@ -986,6 +986,9 @@ class OptionsEvaluator:
          elif option.startswith("--help"):
             self.printHelp()
             sys.exit(0)
+         elif option.startswith("--version"):
+            print "%s.%s.%s" % Utils.getFlagpollVersion()
+            sys.exit(0)
             
 
       agent = None
@@ -1378,6 +1381,8 @@ class OptionsEvaluator:
       print "  --variable=VARIABLE   get the value of a variable"
       print " "
       print "dynamic options(replace VAR with a variable you want to get/filter on)"
+      print "                NOTE: replace underscores with dashes in VAR"
+      print "                NOTE: quotes are needed around <,>,= combinations"
       print "  --get-VAR             get VAR from package"
       print "  --get-all-VAR         get VAR from package and its deps"
       print "  --require-VAR[<,>,=VAL]"

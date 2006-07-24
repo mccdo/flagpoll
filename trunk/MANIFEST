@@ -1,5 +1,7 @@
 exclude fpcmaker.py
-exclude flagpoll.1
+flagpoll.1
+exclude *.pyc
+exclude *.pyo
 flagpoll
 setup.cfg
 setup.py

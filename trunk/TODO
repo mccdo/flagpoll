@@ -6,10 +6,4 @@
 
 COMMAND LINE PARSING UPGRADE
 ----------------------------
-- Better arg parsing for more complicated syntax (--exists a < 2.0 b < 3.2 )
---get-idl-compiler
---get--all-libs --strip-dups --get-something
---get-blag
---get-all-prof-flags
---require-all-extra-neatoness
---require-this>=1.0
+--strip-dups
