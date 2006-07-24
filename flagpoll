@@ -165,6 +165,7 @@ class Utils:
    # Holds collection of small utility functions
    
    EXTRA_FLAGPOLL_SEARCH_PATHS = ""
+   EXTRA_FLAGPOLL_FILES = ""
    path_list_cache = None                         # Cache of found path lists.  (only calcuate once)
 
    def getFlagpollVersion():
@@ -207,6 +208,15 @@ class Utils:
       Utils.path_list_cache = path_list
       return path_list
    getPathList = staticmethod(getPathList)
+
+   def getFileList():
+      flist = Utils.EXTRA_FLAGPOLL_FILES.split(":")
+      filelist = []
+      for f in flist:
+         if os.path.isfile(f):
+            filelist.append(f)
+      return filelist
+   getFileList = staticmethod(getFileList)
 
    def stripDupInList(gen_list):
       new_list = []
@@ -354,6 +364,7 @@ class Utils:
            except ValueError:
             flagDBG().out(flagDBG.WARN, "PkgInfo.parse", "%s has an invalid .pc file" % filename)
          lokals[name] = val
+      fvars["XXFlagpollFilenameXX"] = filename
       return fvars
    parsePcFile = staticmethod(parsePcFile)
 
@@ -466,6 +477,15 @@ class DepResolutionSystem(object):
          self.addNewAgent(agent)
          return agent
 
+   def createResolveAgent(self, name):
+      if self.checkAgentExists(name):
+         return self.getAgent(name)
+      else:
+         agent = PkgAgent(name)
+         flagDBG().out(flagDBG.INFO, "DepResSys.createResloveAgent", "Adding %s" % name)
+         self.addResolveAgent(agent)
+         return agent
+
    def setPrivateRequires( self, req ):
       self.mCheckPrivateRequires = req
 
@@ -482,7 +502,8 @@ class DepResolutionSystem(object):
          flagDBG().out(flagDBG.ERROR, "DepResSys.getAgent", "Agent %s does not exist" % name)
 
    def addNewAgent(self, agent):
-      self.mAgentDict[agent.getName()] = agent
+      if not self.checkAgentExists(agent):
+         self.mAgentDict[agent.getName()] = agent
 
    def addResolveAgent(self, agent):
       if agent not in self.mResolveAgents:
@@ -577,8 +598,10 @@ class PkgAgent:
       if not PkgDB().exists(name):
          flagDBG().out(flagDBG.ERROR, "PkgAgent", "No info for package: %s" % self.mName)
 
+      #XXX Doesn't keep filters added for a redo...
       DepResolutionSystem().addNewAgent(self)
-      self.mFilterList = DepResolutionSystem().getFilters()
+      self.mFilterList = []
+      self.mFilterList.extend(DepResolutionSystem().getFilters())
       self.mBasePackageList = PkgDB().getPkgInfos(name)
       for filt in self.mFilterList:
          self.mBasePackageList = filt.filter(self.mBasePackageList)
@@ -595,6 +618,7 @@ class PkgAgent:
       self.mAgentDependList = [] # Agents that it depends on/needs to update
       self.makeDependList()
       self.mFiltersChanged = True
+
 
    def getName(self):
       return self.mName
@@ -852,22 +876,31 @@ class PkgDB(object):
          for g in glob_list: # Get key name and add file to value list in dictionary
             key = os.path.basename(g)[:-3]   # Strip .pc off the filename...rstrip no worky
             pc_dict.setdefault(key,[]).append(g)
+      for f in Utils.getFileList():
+         if f.endswith(".pc"):
+            key = os.path.basename(f)[:-3]   # Strip .pc off the filename...rstrip no worky
+            pc_dict.setdefault(key,[]).append(f)
       return pc_dict # { "key", [ "list", "of", "corresponding", "pc", "files"] }
 
    def populatePkgInfoDBPcFiles(self):
       dict_to_pop_from = self.buildPcFileDict()
+         
       for (pkg,files) in dict_to_pop_from.iteritems():
-         self.mPkgInfos.setdefault(pkg,[]).append(PkgInfo(pkg, files[0], "pc"))
+         for f in files:
+            self.mPkgInfos.setdefault(pkg,[]).append(PkgInfo(pkg, f, "pc"))
 
    def buildFpcFileList(self):
       """ Builds up a dictionary of {name: list of files for name} """
       file_list = []
       for p in Utils.getPathList():
-         glob_list = glob.glob(os.path.join(p, "*.fpc")) # List of .pc files in that directory
+         glob_list = glob.glob(os.path.join(p, "*.fpc")) # List of .fpc files in that directory
          flagDBG().out(flagDBG.VERBOSE, "PkgDB.buildPcFileDict",
                        "Process these fpc files: %s" % str(glob_list))
          for g in glob_list:
             file_list.append(g)
+      for f in Utils.getFileList():
+         if f.endswith(".fpc"):
+            file_list.append(f)
       return file_list # [ "list", "of", "fpc", "files"] 
 
    def populatePkgInfoDBFpcFiles(self):
@@ -939,6 +972,15 @@ class OptionsEvaluator:
 
       # Process args in the order that they were recieved.  Some options are not
       # shown below because they are sub-options of an option below (--strip-dups)
+      
+      for option in args:
+         if option.startswith("--debug"):
+            flagDBG().setLevel(flagDBG.VERBOSE)
+         elif option.startswith("--from-file"):
+            val_start = option.find('=') + 1
+            file = option[val_start:]
+            Utils.EXTRA_FLAGPOLL_FILES = Utils.EXTRA_FLAGPOLL_FILES + ":" + file
+            
 
       agent = None
       num_args = len(args)
@@ -975,13 +1017,10 @@ class OptionsEvaluator:
             curr_arg = curr_arg + 1
             continue
 
-         if args[curr_arg].startswith("--debug"):
-            flagDBG().setLevel(flagDBG.VERBOSE)
-            curr_arg = curr_arg + 1
-            continue
-
          if args[curr_arg].startswith("--extra-paths"):
-            Utils.EXTRA_FLAGPOLL_SEARCH_PATHS = Utils.EXTRA_FLAGPOLL_SEARCH_PATHS + ":" + self.mOptions.extra_paths
+            val_start = args[curr_arg].find('=') + 1
+            paths = args[curr_arg][val_start:]
+            Utils.EXTRA_FLAGPOLL_SEARCH_PATHS = Utils.EXTRA_FLAGPOLL_SEARCH_PATHS + ":" + paths
             curr_arg = curr_arg + 1
             continue
 
@@ -999,6 +1038,17 @@ class OptionsEvaluator:
          if args[curr_arg].startswith("--exists"):
             important_options.append("exists")
             curr_arg = curr_arg + 1
+            continue
+
+         if args[curr_arg].startswith("--from-file"):
+            val_start = args[curr_arg].find('=') + 1
+            file = args[curr_arg][val_start:]
+            file_filter = Filter("XXFlagpollFilenameXX", lambda x: x == file)
+            curr_arg = curr_arg + 1
+            if agent is not None:
+               agent.addFilter(file_filter)
+            else:
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
             continue
 
          if args[curr_arg].startswith("--info"):
@@ -1152,8 +1202,9 @@ class OptionsEvaluator:
             continue
 
          if args[curr_arg].startswith("--modversion"):
+            if agent is not None:
+               output_options.append(("Version", agent.getName()))
             curr_arg = curr_arg + 1
-            print PkgDB().getVariables(self.mArgs[0], ["Version"])
             continue
 
          if args[curr_arg].startswith("--exact-version"):
@@ -1212,18 +1263,30 @@ class OptionsEvaluator:
             name = args[curr_arg]
             curr_arg = curr_arg + 1
             if PkgDB().checkPackage(name):
-               agent = DepResolutionSystem().createAgent(name)
-               DepResolutionSystem().addResolveAgent(agent)
+               agent = DepResolutionSystem().createResolveAgent(name)
             else:
                flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "Invalid Package %s" % name)
                sys.exit(1)
+            continue
+
+         #flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "Invalid Option: %s" % args[curr_arg])
+         curr_arg = curr_arg + 1
 
 
       DepResolutionSystem().resolveDeps()
       pkgs = DepResolutionSystem().getPackages()
+      for p in pkgs:
+         if not p:
+            flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No valid configurations found")
+            
       if len(pkgs) == 0:
          flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No valid configurations found")
          sys.exit(1)
+
+
+      for option in important_options:
+         if option == "exists":
+            return sys.exit(0) # already checked for none above
       
       #print output_options
       #output_options = []
