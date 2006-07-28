@@ -401,10 +401,14 @@ class flagDBG(object):
          self.mLevel = level
 
    def out(self, level, obj, message):
+      if level == self.ERROR:
+         if self.mLevel == VERBOSE:
+            print self.mLevelList[level] + ":" + str(obj) + ": " + str(message)
+         else:
+            print self.mLevelList[level] + ":" + str(message)
+         sys.exit(1)
       if level >= self.mLevel: 
          print self.mLevelList[level] + ":" + str(obj) + ": " + str(message)
-      if level == self.ERROR:
-         sys.exit(1)
 
 
 class DepResolutionSystem(object):
