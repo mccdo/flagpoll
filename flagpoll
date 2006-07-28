@@ -352,7 +352,7 @@ class Utils:
            try:
              val = Template(val).safe_substitute(lokals)
            except ValueError:
-            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid .pc file" % filename)
+            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid metadata file" % filename)
          fvars[name] = val
        elif '=' in line: # local variable
          name, val = line.split('=', 1)
@@ -362,9 +362,10 @@ class Utils:
            try:
              val = Template(val).safe_substitute(lokals)
            except ValueError:
-            flagDBG().out(flagDBG.WARN, "PkgInfo.parse", "%s has an invalid .pc file" % filename)
+            flagDBG().out(flagDBG.WARN, "PkgInfo.parse", "%s has an invalid metadata file" % filename)
          lokals[name] = val
       fvars["XXFlagpollFilenameXX"] = filename
+      fvars["fp_file_cwd"] = str(filename[:- len(os.path.basename(filename))])
       return fvars
    parsePcFile = staticmethod(parsePcFile)
 
