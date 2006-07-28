@@ -1267,7 +1267,10 @@ class OptionsEvaluator:
                output_options.append((get_string, agent.getName()))
             curr_arg = curr_arg + 1
             continue
-
+         if args[curr_arg].startswith("--concat"):
+            important_options.append("concat")
+            curr_arg = curr_arg + 1
+            continue
          if not args[curr_arg].startswith("--"):
             name = args[curr_arg]
             curr_arg = curr_arg + 1
@@ -1292,32 +1295,44 @@ class OptionsEvaluator:
          flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No valid configurations found")
          sys.exit(1)
 
-
+      concat = False
       for option in important_options:
          if option == "exists":
             return sys.exit(0) # already checked for none above
+         if option == "concat":
+            concat = True
+            
       
       #print output_options
       #output_options = []
       #output_single = []
       #Process options here..............
+      concat_list = []
+      if concat:
+         print_option = lambda x: concat_list.extend(x)
+      else:
+         print_option = lambda x: Utils.printList(x)
+
       for option in output_options:
          if option[0] == "cflags":
-            Utils.printList(Utils.stripDupIncludeFlags(self.getVarFromPkgs("Cflags", pkgs, option[1])))
+            print_option(Utils.stripDupIncludeFlags(self.getVarFromPkgs("Cflags", pkgs, option[1])))
          elif option[0] == "cflags-only-I":
-            Utils.printList(Utils.cflagsOnlyDirIncludeFlags(self.getVarFromPkgs("Cflags", pkgs, option[1])))
+            print_option(Utils.cflagsOnlyDirIncludeFlags(self.getVarFromPkgs("Cflags", pkgs, option[1])))
          elif option[0] == "cflags-only-other":
-            Utils.printList(Utils.cflagsOnlyOtherIncludeFlags(self.getVarFromPkgs("Cflags", pkgs, option[1])))
+            print_option(Utils.cflagsOnlyOtherIncludeFlags(self.getVarFromPkgs("Cflags", pkgs, option[1])))
          elif option[0] == "libs-only-l":
-            Utils.printList(Utils.libsOnlyLinkerFlags(self.getVarFromPkgs("Libs", pkgs, option[1])))
+            print_option(Utils.libsOnlyLinkerFlags(self.getVarFromPkgs("Libs", pkgs, option[1])))
          elif option[0] == "libs-only-L":
-            Utils.printList(Utils.libDirsOnlyLinkerFlags(self.getVarFromPkgs("Libs", pkgs, option[1])))
+            print_option(Utils.libDirsOnlyLinkerFlags(self.getVarFromPkgs("Libs", pkgs, option[1])))
          elif option[0] == "libs-only-other":
-            Utils.printList(Utils.libsOnlyOtherLinkerFlags(self.getVarFromPkgs("Libs", pkgs, option[1])))
+            print_option(Utils.libsOnlyOtherLinkerFlags(self.getVarFromPkgs("Libs", pkgs, option[1])))
          elif option[0] == "libs":
-            Utils.printList(Utils.stripDupLinkerFlags(self.getVarFromPkgs("Libs", pkgs, option[1])))
+            print_option(Utils.stripDupLinkerFlags(self.getVarFromPkgs("Libs", pkgs, option[1])))
          else:
-            Utils.printList(Utils.stripDupInList(self.getVarFromPkgs(option[0], pkgs, option[1])))
+            print_option(Utils.stripDupInList(self.getVarFromPkgs(option[0], pkgs, option[1])))
+
+      if concat:
+         Utils.printList(Utils.stripDupInList(concat_list))
             
 
    def getVarFromPkgs(self, var, pkgs, pkg_name=""):
