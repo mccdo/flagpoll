@@ -171,7 +171,7 @@ class Utils:
    def getFlagpollVersion():
       FLAGPOLL_MAJOR_VERSION = 0
       FLAGPOLL_MINOR_VERSION = 2
-      FLAGPOLL_PATCH_VERSION = 1
+      FLAGPOLL_PATCH_VERSION = 2
       return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
    getFlagpollVersion = staticmethod(getFlagpollVersion)
 
@@ -1367,6 +1367,7 @@ class OptionsEvaluator:
       print "  --debug               show verbose debug information"
       print "  --extra-paths=EXTRA_PATHS"
       print "                        extra paths for flagpoll to search for meta-data files"
+      print "  --concat              concatenate all output and output as one line"
       print " "
       print "options:"
       print "  --modversion          output version for package"
