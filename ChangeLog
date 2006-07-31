@@ -1,6 +1,9 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+2006-07-31 dshipton     Added --no-deps option
+                        VERSION: 0.2.3
 2006-07-28 dshipton     Added --concat option
+                        VERSION: 0.2.2
 [Version 0.2.1 Released - 07.24.2006]==========================================
 2006-07-24 dshipton     Updated distutils script and help
                         VERSION: 0.2.1
