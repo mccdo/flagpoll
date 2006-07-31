@@ -171,7 +171,7 @@ class Utils:
    def getFlagpollVersion():
       FLAGPOLL_MAJOR_VERSION = 0
       FLAGPOLL_MINOR_VERSION = 2
-      FLAGPOLL_PATCH_VERSION = 2
+      FLAGPOLL_PATCH_VERSION = 3
       return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
    getFlagpollVersion = staticmethod(getFlagpollVersion)
 
@@ -442,6 +442,7 @@ class DepResolutionSystem(object):
       self.mAgentsVisitedList = [] # list of Agents that have been visited
       self.mResolvedPackageList = [] # list that is generated when deps are satified
       self.mCheckPrivateRequires = False
+      self.mMadeDependList = False
 
    def getFilters(self):
       return self.mFilters
@@ -555,6 +556,11 @@ class DepResolutionSystem(object):
    # at the end ask for pkglist..if it comes back empty then we don't
    # have a usable configuration for those packages
    def resolveDeps(self):
+      if not self.mMadeDependList:
+         for agent in self.mResolveAgents:
+            agent.makeDependList()
+         self.mMadeDependList = True
+
       self.resolveHelper() 
       self.updateResolvedPackages()
       # Check if the first round through we found something
@@ -621,15 +627,23 @@ class PkgAgent:
       else:
          self.mCurrentPackage = []
       self.mAgentDependList = [] # Agents that it depends on/needs to update
-      self.makeDependList()
+      #self.makeDependList()
       self.mFiltersChanged = True
+      self.mCheckDepends = True
 
 
    def getName(self):
       return self.mName
 
+   def setCheckDepends(self, tf):
+      self.mCheckDepends = tf
+
    #Filter("Version", lambda x: x == "4.5")
    def makeDependList(self):
+      if not self.mCheckDepends:
+         self.mAgentDependList = []
+         return 
+
       dep_list = []
       if self.mCurrentPackage:
          req_string = self.mCurrentPackage.getVariable("Requires")
@@ -1208,6 +1222,12 @@ class OptionsEvaluator:
 
             continue
 
+         if args[curr_arg].startswith("--no-deps"):
+            if agent is not None:
+               agent.setCheckDepends(False)
+            else:
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+
          if args[curr_arg].startswith("--require="):
             val_start = args[curr_arg].find('=') + 1
             req_var = args[curr_arg][val_start:]
@@ -1390,6 +1410,7 @@ class OptionsEvaluator:
       print "  --info                show information for packages"
       print "  --print-provides      print which packages the package provides"
       print "  --print-requires      print which packages the package requires"
+      print "  --no-deps                do not lookup dependencies for the package"
       print "  --atleast-version=ATLEAST_VERSION"
       print "                        return 0 if the module is at least version"
       print "                        ATLEAST_VERSION"
