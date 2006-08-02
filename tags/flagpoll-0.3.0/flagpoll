@@ -337,7 +337,7 @@ class Utils:
          if len(item) > 0:
             list_string+=str(item)
             list_string+=" "
-      print list_string
+      print list_string.strip()
    printList = staticmethod(printList)
 
    def parsePcFile(filename):
