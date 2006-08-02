@@ -344,6 +344,8 @@ class Utils:
        line = line.strip()
        if not line:
          continue
+       if line.startswith("#"):
+         continue
        elif ':' in line: # exported variable
          name, val = line.split(':', 1)
          name = name.strip()
