@@ -168,6 +168,7 @@ class Utils:
    EXTRA_FLAGPOLL_FILES = ""
    path_list_cache = None                         # Cache of found path lists.  (only calcuate once)
 
+
    def getFlagpollVersion():
       FLAGPOLL_MAJOR_VERSION = 0
       FLAGPOLL_MINOR_VERSION = 2
@@ -405,10 +406,10 @@ class flagDBG(object):
 
    def out(self, level, obj, message):
       if level == self.ERROR:
-         if self.mLevel == VERBOSE:
+         if self.mLevel == self.VERBOSE:
             print self.mLevelList[level] + ":" + str(obj) + ": " + str(message)
          else:
-            print self.mLevelList[level] + ":" + str(message)
+            print self.mLevelList[level] + ": " + str(message)
          sys.exit(1)
       if level >= self.mLevel: 
          print self.mLevelList[level] + ":" + str(obj) + ": " + str(message)
@@ -529,7 +530,6 @@ class DepResolutionSystem(object):
          list_of_pkgs = agent.getCurrentPackageList(agent_list)
          pkg_list.extend(list_of_pkgs)
       self.mResolvedPackageList = pkg_list
-      
 
    def getPackages(self):
       flagDBG().out(flagDBG.VERBOSE, "DepResSys.getPackages",
@@ -689,7 +689,7 @@ class PkgAgent:
                   new_agent.addFilter(new_filter)
             else:
                flagDBG().out(flagDBG.ERROR, "PkgAgent.makeDependList",
-                             "Package %s depends on %s but is not seem to be installed." % (self.mName, str(req_string_list[i])))
+                             "Package %s depends on %s but does not seem to be installed." % (self.mName, str(req_string_list[i])))
 
          flagDBG().out(flagDBG.VERBOSE, "PkgAgent.makeDependList", 
                        "List is:" + str([pkg.getName() for pkg in dep_list]))
