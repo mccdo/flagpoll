@@ -350,17 +350,9 @@ class Utils:
          continue
        if line.startswith("#"):
          continue
-       elif ':' in line: # exported variable
-         name, val = line.split(':', 1)
-         name = name.strip()
-         val = val.strip()
-         if '$' in val:
-           try:
-             val = Template(val).safe_substitute(lokals)
-           except ValueError:
-            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid metadata file" % filename)
-         fvars[name] = val
-       elif '=' in line: # local variable
+       eq_pos = line.find('=')
+       col_pos = line.find(':')
+       if eq_pos < col_pos and eq_pos != -1 or col_pos == -1 and eq_pos !=-1: # local variable
          name, val = line.split('=', 1)
          name = name.strip()
          val = val.strip()
@@ -370,6 +362,16 @@ class Utils:
            except ValueError:
             flagDBG().out(flagDBG.WARN, "PkgInfo.parse", "%s has an invalid metadata file" % filename)
          lokals[name] = val
+       if col_pos < eq_pos and col_pos != -1 or eq_pos == -1 and col_pos !=-1: # exported variable
+         name, val = line.split(':', 1)
+         name = name.strip()
+         val = val.strip()
+         if '$' in val:
+           try:
+             val = Template(val).safe_substitute(lokals)
+           except ValueError:
+            flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid metadata file" % filename)
+         fvars[name] = val
       fvars["XXFlagpollFilenameXX"] = filename
       fvars["fp_file_cwd"] = str(filename[:- len(os.path.basename(filename))])
       return fvars
