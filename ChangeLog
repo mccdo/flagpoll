@@ -1,5 +1,8 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+[Version 0.3.0 Released - 08.02.2006]==========================================
+2006-07-31 dshipton     Added --keep-dups option
+                        VERSION: 0.3.0
 2006-07-31 dshipton     Added --no-deps option
                         VERSION: 0.2.3
 2006-07-28 dshipton     Added --concat option
