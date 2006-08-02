@@ -167,6 +167,7 @@ class Utils:
    EXTRA_FLAGPOLL_SEARCH_PATHS = ""
    EXTRA_FLAGPOLL_FILES = ""
    path_list_cache = None                         # Cache of found path lists.  (only calcuate once)
+   KEEP_DUPS = False
 
 
    def getFlagpollVersion():
@@ -219,9 +220,18 @@ class Utils:
       return filelist
    getFileList = staticmethod(getFileList)
 
+   def setKeepDups(keep_dups):
+      Utils.KEEP_DUPS = keep_dups
+   setKeepDups = staticmethod(setKeepDups)
+
    def stripDupInList(gen_list):
       new_list = []
       for item in gen_list:
+         item = item.strip()
+         if Utils.KEEP_DUPS:
+            if len(item) > 0:
+               new_list.append(item)
+            continue
          if item not in new_list:
             if len(item) > 0:
                new_list.append(item)
@@ -235,14 +245,13 @@ class Utils:
       dir_list = []
       for flg in flag_list:
          flg = flg.strip()
-         if flg not in lib_list and flg not in dir_list:
-            if len(flg) > 0:
-               if flg.startswith("-L") or flg.startswith("-R"):
-                  dir_list.append(flg)
-               else:
-                  lib_list.append(flg)
+         if len(flg) > 0:
+            if flg.startswith("-L") or flg.startswith("-R"):
+               dir_list.append(flg)
+            else:
+               lib_list.append(flg)
       new_list = dir_list + lib_list
-      return new_list
+      return Utils.stripDupInList(new_list)
    stripDupLinkerFlags = staticmethod(stripDupLinkerFlags)
 
    def stripDupIncludeFlags(flag_list):
@@ -252,15 +261,14 @@ class Utils:
       extra_list = []
       for flg in flag_list:
          flg = flg.strip()
-         if flg not in inc_list and flg not in extra_list:
-            if len(flg) > 0:
-               if flg.startswith("-I"):
-                  inc_list.append(flg)
-               else:
-                  extra_list.append(flg)
+         if len(flg) > 0:
+            if flg.startswith("-I"):
+               inc_list.append(flg)
+            else:
+               extra_list.append(flg)
       extra_list.sort()
       new_list = inc_list + extra_list
-      return new_list
+      return Utils.stripDupInList(new_list)
    stripDupIncludeFlags = staticmethod(stripDupIncludeFlags)
 
    def cflagsOnlyDirIncludeFlags(flag_list):
@@ -269,11 +277,10 @@ class Utils:
       inc_list = []
       for flg in flag_list:
          flg = flg.strip()
-         if flg not in inc_list:
-            if len(flg) > 0:
-               if flg.startswith("-I"):
-                  inc_list.append(flg)
-      return inc_list
+         if len(flg) > 0:
+            if flg.startswith("-I"):
+               inc_list.append(flg)
+      return Utils.stripDupInList(inc_list)
    cflagsOnlyDirIncludeFlags = staticmethod(cflagsOnlyDirIncludeFlags)
 
    def cflagsOnlyOtherIncludeFlags(flag_list):
@@ -282,11 +289,10 @@ class Utils:
       extra_list = []
       for flg in flag_list:
          flg = flg.strip()
-         if flg not in extra_list:
-            if len(flg) > 0:
-               if not flg.startswith("-I"):
-                  extra_list.append(flg)
-      return extra_list
+         if len(flg) > 0:
+            if not flg.startswith("-I"):
+               extra_list.append(flg)
+      return Utils.stripDupInList(extra_list)
    cflagsOnlyOtherIncludeFlags = staticmethod(cflagsOnlyOtherIncludeFlags)
 
    def libsOnlyLinkerFlags(flag_list):
@@ -295,11 +301,10 @@ class Utils:
       lib_list = []
       for flg in flag_list:
          flg = flg.strip()
-         if flg not in lib_list:
-            if len(flg) > 0:
-               if flg.startswith("-l"):
-                  lib_list.append(flg)
-      return lib_list
+         if len(flg) > 0:
+            if flg.startswith("-l"):
+               lib_list.append(flg)
+      return Utils.stripDupInList(lib_list)
    libsOnlyLinkerFlags = staticmethod(libsOnlyLinkerFlags)      
 
    def libsOnlyOtherLinkerFlags(flag_list):
@@ -308,11 +313,10 @@ class Utils:
       other_list = []
       for flg in flag_list:
          flg = flg.strip()
-         if flg not in other_list:
-            if len(flg) > 0:
-               if not flg.startswith("-l") and not flg.startswith("-L") and not flg.startswith("-R"):
-                  other_list.append(flg)
-      return other_list
+         if len(flg) > 0:
+            if not flg.startswith("-l") and not flg.startswith("-L") and not flg.startswith("-R"):
+               other_list.append(flg)
+      return Utils.stripDupInList(other_list)
    libsOnlyOtherLinkerFlags = staticmethod(libsOnlyOtherLinkerFlags) 
 
    def libDirsOnlyLinkerFlags(flag_list):
@@ -321,11 +325,10 @@ class Utils:
       dir_list = []
       for flg in flag_list:
          flg = flg.strip()
-         if flg not in dir_list:
-            if len(flg) > 0:
-               if flg.startswith("-L") or flg.startswith("-R"):
-                  dir_list.append(flg)
-      return dir_list
+         if len(flg) > 0:
+            if flg.startswith("-L") or flg.startswith("-R"):
+               dir_list.append(flg)
+      return Utils.stripDupInList(dir_list)
    libDirsOnlyLinkerFlags = staticmethod(libDirsOnlyLinkerFlags) 
 
    def printList(gen_list):
@@ -1086,6 +1089,11 @@ class OptionsEvaluator:
             curr_arg = curr_arg + 1
             continue
 
+         if args[curr_arg].startswith("--keep-dups"):
+            Utils.setKeepDups(True)
+            curr_arg = curr_arg + 1
+            continue
+
          if args[curr_arg].startswith("--libs-only-l"):
             output_options.append(("libs-only-l", ""))
             curr_arg = curr_arg + 1
@@ -1395,6 +1403,7 @@ class OptionsEvaluator:
       print "  --extra-paths=EXTRA_PATHS"
       print "                        extra paths for flagpoll to search for meta-data files"
       print "  --concat              concatenate all output and output as one line"
+      print "  --keep-dups           do not strip out all duplicate info from options"
       print " "
       print "options:"
       print "  --modversion          output version for package"
