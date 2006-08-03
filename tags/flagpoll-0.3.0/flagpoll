@@ -984,7 +984,7 @@ class OptionsEvaluator:
    def __init__(self):
       #self.mOptParser = self.GetOptionParser()
       #self.mOptParser.print_help()
-      if sys.argv < 1:
+      if len(sys.argv) < 2:
          self.printHelp()
       #(self.mOptions, self.mArgs) = self.mOptParser.parse_args()
       #if self.mOptions.version:
@@ -1446,6 +1446,7 @@ class OptionsEvaluator:
       print "  --require-all-VAR[<,>,=VAL]"
       print "                        require that a var is defined for all packages"
       print "                        or optionally use equality operators against VAL"
+      sys.exit(0)
 
 def main():
    # GO!
