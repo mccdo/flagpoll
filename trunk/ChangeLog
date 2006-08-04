@@ -1,5 +1,8 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+[Version 0.3.1 Released - 08.03.2006]==========================================
+2006-07-31 dshipton     Don't crash when no command line options are given
+                        VERSION: 0.3.1
 2006-08-02 dshipton     Fix printing of extra spaces and how to detect var type
 [Version 0.3.0 Released - 08.02.2006]==========================================
 2006-07-31 dshipton     Added --keep-dups option
