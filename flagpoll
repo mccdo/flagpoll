@@ -1045,7 +1045,7 @@ class OptionsEvaluator:
             if agent is not None:
                agent.addFilter(atleast_filter)
             else:
-               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified for option:  --at-least-version")
             continue
 
          if args[curr_arg].startswith("--cflags-only-I"):
@@ -1080,7 +1080,7 @@ class OptionsEvaluator:
             if agent is not None:
                agent.addFilter(exact_filter)
             else:
-               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified for option:  --exact-version")
             continue
 
          if args[curr_arg].startswith("--exists"):
@@ -1096,7 +1096,7 @@ class OptionsEvaluator:
             if agent is not None:
                agent.addFilter(file_filter)
             else:
-               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified for option:  --from-file")
             continue
 
          if args[curr_arg].startswith("--info"):
@@ -1182,62 +1182,46 @@ class OptionsEvaluator:
             req_string = args[curr_arg][rlen:]
             req_string = req_string.replace('-','_')
             curr_arg = curr_arg + 1
+            if agent is None:
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified for option:  --require")
             if req_string.find("<=") != -1:
                op_start = req_string.find("<=")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 2:]
                new_filter = Filter(req_var, lambda x: x <= req_val)
-               if agent is not None:
-                  agent.addFilter(new_filter)
-               else:
-                  flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               agent.addFilter(new_filter)
                continue
             if req_string.find(">=") != -1:
                op_start = req_string.find(">=")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 2:]
                new_filter = Filter(req_var, lambda x: x >= req_val)
-               if agent is not None:
-                  agent.addFilter(new_filter)
-               else:
-                  flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               agent.addFilter(new_filter)
                continue
             if req_string.find(">") != -1:
                op_start = req_string.find(">")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 1:]
                new_filter = Filter(req_var, lambda x: x > req_val)
-               if agent is not None:
-                  agent.addFilter(new_filter)
-               else:
-                  flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               agent.addFilter(new_filter)
                continue
             if req_string.find("<") != -1:
                op_start = req_string.find("<")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 1:]
                new_filter = Filter(req_var, lambda x: x < req_val)
-               if agent is not None:
-                  agent.addFilter(new_filter)
-               else:
-                  flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               agent.addFilter(new_filter)
                continue
             if req_string.find("=") != -1:
                op_start = req_string.find("=")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 1:]
                new_filter = Filter(req_var, lambda x: x == req_val)
-               if agent is not None:
-                  agent.addFilter(new_filter)
-               else:
-                  flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               agent.addFilter(new_filter)
                continue
             if req_string.find("=") == -1:
                new_filter = Filter(req_string, lambda x: len(x) > 0)
-               if agent is not None:
-                  agent.addFilter(new_filter)
-               else:
-                  flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               agent.addFilter(new_filter)
                continue
 
             continue
@@ -1246,7 +1230,7 @@ class OptionsEvaluator:
             if agent is not None:
                agent.setCheckDepends(False)
             else:
-               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified for option:  --no-deps")
 
          if args[curr_arg].startswith("--require="):
             val_start = args[curr_arg].find('=') + 1
@@ -1258,18 +1242,9 @@ class OptionsEvaluator:
          if args[curr_arg].startswith("--modversion"):
             if agent is not None:
                output_options.append(("Version", agent.getName()))
-            curr_arg = curr_arg + 1
-            continue
-
-         if args[curr_arg].startswith("--exact-version"):
-            val_start = args[curr_arg].find('=') + 1
-            exact_version = args[curr_arg][val_start:]
-            exact_filter = Filter("Version", lambda x: x == exact_version)
-            curr_arg = curr_arg + 1
-            if agent is not None:
-               agent.addFilter(exact_filter)
             else:
-               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified for option:  --modversion")
+            curr_arg = curr_arg + 1
             continue
 
          if args[curr_arg].startswith("--max-release"):
@@ -1280,7 +1255,7 @@ class OptionsEvaluator:
             if agent is not None:
                agent.addFilter(max_filter)
             else:
-               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified")
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified for option:  --max-release")
             continue
 
          if args[curr_arg].startswith("--static"):
@@ -1293,6 +1268,8 @@ class OptionsEvaluator:
             fetch_var = args[curr_arg][val_start:]
             if agent is not None:
                output_options.append((fetch_var, agent.getName()))
+            else:
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified for option:  --variable")
             curr_arg = curr_arg + 1
             continue
 
@@ -1310,6 +1287,8 @@ class OptionsEvaluator:
             get_string = get_string.replace('-','_')
             if agent is not None:
                output_options.append((get_string, agent.getName()))
+            else:
+               flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified for option:  --get")
             curr_arg = curr_arg + 1
             continue
          if args[curr_arg].startswith("--concat"):
