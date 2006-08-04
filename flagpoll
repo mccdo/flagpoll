@@ -828,6 +828,15 @@ class PkgDB(object):
       if not '_the_instance' in type.__dict__:
          type._the_instance = object.__new__(type)
       return type._the_instance
+
+   def printAllPackages(self):
+      list_of_package_names = []
+      for pkg in self.mPkgInfos:
+         list_of_package_names.append(pkg)
+      for name in list_of_package_names:
+         print name
+      sys.exit(0)
+         
       
    def getVariables(self, name, variable_list):
       flagDBG().out(flagDBG.INFO, "PkgDB.getVariable", 
@@ -1015,6 +1024,10 @@ class OptionsEvaluator:
          elif option.startswith("--version"):
             print "%s.%s.%s" % Utils.getFlagpollVersion()
             sys.exit(0)
+         elif option.startswith("--list-all"):
+            PkgDB().printAllPackages()
+            continue
+
             
 
       agent = None
@@ -1115,11 +1128,6 @@ class OptionsEvaluator:
          if args[curr_arg].startswith("--libs"):
             output_options.append(("libs", ""))
             curr_arg = curr_arg + 1
-            continue
-
-         if args[curr_arg].startswith("--list-all"):
-            curr_arg = curr_arg + 1
-            PkgDB().printAllPackages()
             continue
 
          if args[curr_arg].startswith("--require-all"):
