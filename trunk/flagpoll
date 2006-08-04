@@ -186,11 +186,11 @@ class Utils:
       flg_cfg_dir = []
       ld_path = []
 
-      if os.environ.has_key("PKG_CONFIG_DIR"):
-         pkg_cfg_dir = os.environ["PKG_CONFIG_DIR"].split(os.pathsep)
+      if os.environ.has_key("PKG_CONFIG_PATH"):
+         pkg_cfg_dir = os.environ["PKG_CONFIG_PATH"].split(os.pathsep)
 
-      if os.environ.has_key("FLG_CONFIG_DIR"):
-         flg_cfg_dir = os.environ["FLG_CONFIG_DIR"].split(os.pathsep)
+      if os.environ.has_key("FLG_CONFIG_PATH"):
+         flg_cfg_dir = os.environ["FLG_CONFIG_PATH"].split(os.pathsep)
 
       if os.environ.has_key("LD_LIBRARY_PATH"):
          ld_path = os.environ["LD_LIBRARY_PATH"].split(os.pathsep)
