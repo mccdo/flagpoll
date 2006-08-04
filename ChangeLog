@@ -1,5 +1,9 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+2006-08-04 dshipton     Use PKG_CONFIG_PATH and FLAGPOLL_CONFIG_PATH to look up
+                        extra pkginfos, command line options work and output
+                        things that are wrong waay better
+                        VERSION: 0.4.0
 [Version 0.3.1 Released - 08.03.2006]==========================================
 2006-07-31 dshipton     Don't crash when no command line options are given
                         VERSION: 0.3.1

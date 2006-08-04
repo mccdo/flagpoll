@@ -1100,7 +1100,7 @@ class OptionsEvaluator:
             continue
 
          if args[curr_arg].startswith("--info"):
-            output_options.append(("info", ""))
+            important_options.append("info")
             curr_arg = curr_arg + 1
             continue
 
@@ -1325,7 +1325,11 @@ class OptionsEvaluator:
             return sys.exit(0) # already checked for none above
          if option == "concat":
             concat = True
-            
+         if option == "info":
+            pkg_info_list = []
+            for pkg in pkgs:
+               #MAKE PRETTY
+               print pkg.getInfo()
       
       #print output_options
       #output_options = []
@@ -1393,6 +1397,7 @@ class OptionsEvaluator:
       print "                        extra paths for flagpoll to search for meta-data files"
       print "  --concat              concatenate all output and output as one line"
       print "  --keep-dups           do not strip out all duplicate info from options"
+      print "  --info                show information for packages"
       print " "
       print "options:"
       print "  --modversion          output version for package"
@@ -1407,9 +1412,8 @@ class OptionsEvaluator:
       print "  --cflags-only-other   output cflags not covered by the cflags-only-I option"
       print "  --exists              return 0 if the module(s) exist"
       print "  --from-file=FILE      use the specified FILE for the package"
-      print "  --info                show information for packages"
-      print "  --print-provides      print which packages the package provides"
-      print "  --print-requires      print which packages the package requires"
+      #print "  --print-provides      print which packages the package provides"
+      #print "  --print-requires      print which packages the package requires"
       print "  --no-deps                do not lookup dependencies for the package"
       print "  --atleast-version=ATLEAST_VERSION"
       print "                        return 0 if the module is at least version"
