@@ -1,5 +1,6 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+[Version 0.4.1 Released - 08.07.2006]==========================================
 2006-08-04 dshipton     Now $fp_file_cwd available at beginning of var subst.
                         VERSION: 0.4.1
 2006-08-04 dshipton     Use PKG_CONFIG_PATH and FLAGPOLL_CONFIG_PATH to look up
