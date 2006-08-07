@@ -1,5 +1,7 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+2006-08-04 dshipton     Now $fp_file_cwd available at beginning of var subst.
+                        VERSION: 0.4.1
 2006-08-04 dshipton     Use PKG_CONFIG_PATH and FLAGPOLL_CONFIG_PATH to look up
                         extra pkginfos, command line options work and output
                         things that are wrong waay better
