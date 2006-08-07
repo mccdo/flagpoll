@@ -343,7 +343,9 @@ class Utils:
    def parsePcFile(filename):
       lines = open(filename).readlines()
       fvars = {}
+      fvars["XXFlagpollFilenameXX"] = filename
       lokals = {}
+      lokals["fp_file_cwd"] = str(filename[:- ((len(os.path.basename(filename) ) + 1))])
       for line in lines:
        line = line.strip()
        if not line:
@@ -372,8 +374,6 @@ class Utils:
            except ValueError:
             flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid metadata file" % filename)
          fvars[name] = val
-      fvars["XXFlagpollFilenameXX"] = filename
-      fvars["fp_file_cwd"] = str(filename[:- len(os.path.basename(filename))])
       return fvars
    parsePcFile = staticmethod(parsePcFile)
 
