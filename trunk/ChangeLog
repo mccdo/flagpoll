@@ -1,5 +1,8 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+2006-07-31 dshipton     When files are searched for we now take into account
+                        that flagpoll installs to lib/flagpoll share/flagpoll
+                        VERSION: 0.5.0
 [Version 0.4.1 Released - 08.07.2006]==========================================
 2006-08-04 dshipton     Now $fp_file_cwd available at beginning of var subst.
                         VERSION: 0.4.1
