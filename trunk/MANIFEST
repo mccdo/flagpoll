@@ -1,5 +1,6 @@
 exclude fpcmaker.py
 flagpoll.1
+flagpoll.m4
 exclude *.pyc
 exclude *.pyo
 flagpoll
