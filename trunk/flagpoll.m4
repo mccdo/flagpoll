@@ -31,7 +31,15 @@ dnl AM_PATH_FLAGPOLL([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]
 dnl Test for Flagpoll, and define FLAGPOLL
 dnl
 AC_DEFUN([AM_PATH_FLAGPOLL],
-[ AC_ARG_WITH(flagpoll,
+[
+   if test "x$FLAGPOLL" = "x" ; then
+     _FLAGPOLL_SETUP()
+   fi
+])
+
+AC_DEFUN([_FLAGPOLL_SETUP],
+[
+   AC_ARG_WITH(flagpoll,
             AC_HELP_STRING([--with-flagpoll=PATH],
                         [path where flagpoll is installed (optional)]),
             flagpoll_path="$withval", flagpoll_path="")
@@ -41,9 +49,9 @@ AC_DEFUN([AM_PATH_FLAGPOLL],
    fi
 
    AC_PATH_PROG(FLAGPOLL, flagpoll, no)
-
    min_flagpoll_version=ifelse([$1], ,0.5.0,$1)
-   AC_MSG_CHECKING(for flagpoll version >= $min_flagpoll_version)
+
+   AC_MSG_CHECKING(new for flagpoll version >= $min_flagpoll_version)
    ok=no
    if test "x$FLAGPOLL" != "xno" ; then
       req_major=`echo $min_flagpoll_version | \
