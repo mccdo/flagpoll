@@ -1310,9 +1310,10 @@ class OptionsEvaluator:
                sys.exit(1)
             continue
 
-         #flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "Invalid Option: %s" % args[curr_arg])
-         curr_arg = curr_arg + 1
+         if args[curr_arg] != "--debug":
+            flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "Invalid Option: %s" % args[curr_arg])
 
+         curr_arg = curr_arg + 1
 
       DepResolutionSystem().resolveDeps()
       pkgs = DepResolutionSystem().getPackages()
