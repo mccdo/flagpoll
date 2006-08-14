@@ -1,8 +1,11 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
-2006-09-08 dshipton     Autoconf macro for flagpoll detection has been added
+2006-08-09 dshipton     Prefix is exported automatically, argument checking
+                        enforced.
+                        VERSION: 0.6.0
+2006-08-09 dshipton     Autoconf macro for flagpoll detection has been added
                         as AM_PATH_FLAGPOLL
-2006-07-08 dshipton     When files are searched for we now take into account
+2006-08-07 dshipton     When files are searched for we now take into account
                         that flagpoll installs to lib/flagpoll share/flagpoll
                         VERSION: 0.5.0
 [Version 0.4.1 Released - 08.07.2006]==========================================
