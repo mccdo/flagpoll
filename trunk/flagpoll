@@ -351,6 +351,7 @@ class Utils:
       fvars["XXFlagpollFilenameXX"] = filename
       lokals = {}
       lokals["fp_file_cwd"] = str(filename[:- ((len(os.path.basename(filename) ) + 1))])
+      lines.append("prefix: ${prefix}")
       for line in lines:
        line = line.strip()
        if not line:
