@@ -1319,15 +1319,24 @@ class OptionsEvaluator:
       pkgs = DepResolutionSystem().getPackages()
       for p in pkgs:
          if not p:
+            for option in important_options:
+               if option == "exists":
+                  print "no"
+                  sys.exit(1)
             flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No valid configurations found")
             
       if len(pkgs) == 0:
+         for option in important_options:
+            if option == "exists":
+               print "no"
+               sys.exit(1)
          flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No valid configurations found")
          sys.exit(1)
 
       concat = False
       for option in important_options:
          if option == "exists":
+            print "yes"
             return sys.exit(0) # already checked for none above
          if option == "concat":
             concat = True
