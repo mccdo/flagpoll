@@ -192,13 +192,14 @@ class Utils:
       if os.environ.has_key("FLAGPOLL_PATH"):
          flg_cfg_dir = os.environ["FLAGPOLL_PATH"].split(os.pathsep)
 
-      if os.environ.has_key("LD_LIBRARY_PATH"):
-         ld_path = os.environ["LD_LIBRARY_PATH"].split(os.pathsep)
-         ld_path_pkg = [pj(p,'pkgconfig') for p in ld_path]
-         ld_path_flg = [pj(p,'flagpoll') for p in ld_path]
-         ld_path = []
-         ld_path.extend(ld_path_pkg)
-         ld_path.extend(ld_path_flg)
+      ld_dirs = ['LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH']
+      for d in ld_dirs:
+         if os.environ.has_key(d):
+            cur_path = os.environ[d].split(os.pathsep)
+            ld_path_pkg = [pj(p,'pkgconfig') for p in cur_path]
+            ld_path_flg = [pj(p,'flagpoll') for p in cur_path]
+            ld_path.extend(ld_path_pkg)
+            ld_path.extend(ld_path_flg)
 
       extra_paths = Utils.EXTRA_FLAGPOLL_SEARCH_PATHS.split(os.pathsep)
       path_list = ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig",
