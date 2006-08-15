@@ -1114,6 +1114,11 @@ class OptionsEvaluator:
             curr_arg = curr_arg + 1
             continue
 
+         if args[curr_arg].startswith("--print-pkg-options"):
+            important_options.append("print-pkg-options")
+            curr_arg = curr_arg + 1
+            continue
+
          if args[curr_arg].startswith("--keep-dups"):
             Utils.setKeepDups(True)
             curr_arg = curr_arg + 1
@@ -1353,7 +1358,17 @@ class OptionsEvaluator:
             pkg_info_list = []
             for pkg in pkgs:
                #MAKE PRETTY
-               print pkg.getInfo()
+               print pkg.getName()
+               pkg_info = pkg.getInfo()
+               for key in pkg_info.keys():
+                  print " %s : %s" % (key, pkg_info[key])
+         if option == "print-pkg-options":
+            for pkg in pkgs:
+               print pkg.getName()
+               print "(--get-/--get-all-)"
+               for line in pkg.getInfo():
+                  print "  " + line
+            
       
       #print output_options
       #output_options = []
