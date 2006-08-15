@@ -1,6 +1,10 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
-2006-08-09 dshipton     Prefix is exported automatically, argument checking
+2006-08-15 dshipton     Various code enhancements for OS level detection
+                        VERSION: 0.6.2
+2006-08-15 dshipton     Fixed --no-deps option processing
+                        VERSION: 0.6.1
+2006-08-14 dshipton     Prefix is exported automatically, argument checking
                         enforced.
                         VERSION: 0.6.0
 2006-08-09 dshipton     Autoconf macro for flagpoll detection has been added
