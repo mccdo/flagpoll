@@ -51,7 +51,7 @@ AC_DEFUN([_FLAGPOLL_SETUP],
    AC_PATH_PROG(FLAGPOLL, flagpoll, no)
    min_flagpoll_version=ifelse([$1], ,0.5.0,$1)
 
-   AC_MSG_CHECKING(new for flagpoll version >= $min_flagpoll_version)
+   AC_MSG_CHECKING(whether flagpoll version is >= $min_flagpoll_version)
    ok=no
    if test "x$FLAGPOLL" != "xno" ; then
       req_major=`echo $min_flagpoll_version | \
