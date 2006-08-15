@@ -1237,6 +1237,8 @@ class OptionsEvaluator:
                agent.setCheckDepends(False)
             else:
                flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified for option:  --no-deps")
+            curr_arg = curr_arg + 1
+            continue
 
          if args[curr_arg].startswith("--require="):
             val_start = args[curr_arg].find('=') + 1
@@ -1297,10 +1299,12 @@ class OptionsEvaluator:
                flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No package specified for option:  --get")
             curr_arg = curr_arg + 1
             continue
+
          if args[curr_arg].startswith("--concat"):
             important_options.append("concat")
             curr_arg = curr_arg + 1
             continue
+
          if not args[curr_arg].startswith("--"):
             name = args[curr_arg]
             curr_arg = curr_arg + 1
