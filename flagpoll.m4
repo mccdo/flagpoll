@@ -49,7 +49,7 @@ AC_DEFUN([_FLAGPOLL_SETUP],
    fi
 
    AC_PATH_PROG(FLAGPOLL, flagpoll, no)
-   min_flagpoll_version=ifelse([$1], ,0.5.0,$1)
+   min_flagpoll_version=ifelse([$1], ,0.7.0,$1)
 
    AC_MSG_CHECKING(whether flagpoll version is >= $min_flagpoll_version)
    ok=no

@@ -1,5 +1,8 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+2006-08-16 dshipton     New cleaned up options and better looking macros
+                        --info and --print-pkg-options work great
+                        VERSION: 0.7.0
 2006-08-15 dshipton     Various code enhancements for OS level detection
                         VERSION: 0.6.2
 2006-08-15 dshipton     Fixed --no-deps option processing
