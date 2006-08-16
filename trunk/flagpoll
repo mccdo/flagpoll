@@ -1364,18 +1364,20 @@ class OptionsEvaluator:
                   for key in pkg_info.keys():
                      print " %s : %s" % (key, pkg_info[key])
          if option == "print-pkg-options":
+            print ""
             print "All options below would start with (--get-/--get-all-/--require-/--require-all-)"
             print "NOTE: this list does not include the standard variables that are exported."
+            print ""
             for pkg in pkgs:
                if pkg.getName() not in listedAgentNames:
                   continue
-               print pkg.getName()
+               print "Package: " + pkg.getName()
                for key in pkg.getInfo().keys():
                   if key not in [ "Name", "Description", "URL", "Version", 
                                  "Requires", "Requires.private", "Conflicts", 
                                  "Libs", "Libs.private", "Cflags", "Provides",
-                                 "Arch" ]:
-                     print "  " +  key.replace('-','_')
+                                 "Arch", "FlagpollFilename", "prefix" ]:
+                     print "   " +  key.replace('_','-')
             
       
       #print output_options
@@ -1445,6 +1447,7 @@ class OptionsEvaluator:
       print "  --concat              concatenate all output and output as one line"
       print "  --keep-dups           do not strip out all duplicate info from options"
       print "  --info                show information for packages"
+      print "  --print-pkg-options   show pkg specific options"
       print " "
       print "options:"
       print "  --modversion          output version for package"
