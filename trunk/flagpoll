@@ -349,7 +349,7 @@ class Utils:
    def parsePcFile(filename):
       lines = open(filename).readlines()
       fvars = {}
-      fvars["XXFlagpollFilenameXX"] = filename
+      fvars["FlagpollFilename"] = filename
       lokals = {}
       lokals["fp_file_cwd"] = str(filename[:- ((len(os.path.basename(filename) ) + 1))])
       lines.append("prefix: ${prefix}")
@@ -1039,7 +1039,7 @@ class OptionsEvaluator:
             continue
 
             
-
+      listedAgentNames = []
       agent = None
       num_args = len(args)
       curr_arg = 0
@@ -1101,7 +1101,7 @@ class OptionsEvaluator:
          if args[curr_arg].startswith("--from-file"):
             val_start = args[curr_arg].find('=') + 1
             file = args[curr_arg][val_start:]
-            file_filter = Filter("XXFlagpollFilenameXX", lambda x: x == file)
+            file_filter = Filter("FlagpollFilename", lambda x: x == file)
             curr_arg = curr_arg + 1
             if agent is not None:
                agent.addFilter(file_filter)
@@ -1319,6 +1319,7 @@ class OptionsEvaluator:
             curr_arg = curr_arg + 1
             if PkgDB().checkPackage(name):
                agent = DepResolutionSystem().createResolveAgent(name)
+               listedAgentNames.append(name)
             else:
                flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "Invalid Package %s" % name)
                sys.exit(1)
@@ -1357,17 +1358,24 @@ class OptionsEvaluator:
          if option == "info":
             pkg_info_list = []
             for pkg in pkgs:
-               #MAKE PRETTY
-               print pkg.getName()
-               pkg_info = pkg.getInfo()
-               for key in pkg_info.keys():
-                  print " %s : %s" % (key, pkg_info[key])
+               if pkg.getName() in listedAgentNames:
+                  print pkg.getName()
+                  pkg_info = pkg.getInfo()
+                  for key in pkg_info.keys():
+                     print " %s : %s" % (key, pkg_info[key])
          if option == "print-pkg-options":
+            print "All options below would start with (--get-/--get-all-/--require-/--require-all-)"
+            print "NOTE: this list does not include the standard variables that are exported."
             for pkg in pkgs:
+               if pkg.getName() not in listedAgentNames:
+                  continue
                print pkg.getName()
-               print "(--get-/--get-all-)"
-               for line in pkg.getInfo():
-                  print "  " + line
+               for key in pkg.getInfo().keys():
+                  if key not in [ "Name", "Description", "URL", "Version", 
+                                 "Requires", "Requires.private", "Conflicts", 
+                                 "Libs", "Libs.private", "Cflags", "Provides",
+                                 "Arch" ]:
+                     print "  " +  key.replace('-','_')
             
       
       #print output_options
