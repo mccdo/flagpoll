@@ -1,0 +1,8 @@
+prefix=/usr
+
+Name: Flagpoll
+Description: Program for retrieving meta-data from installed packages.
+URL: https://realityforge.vrsource.org/view/FlagPoll/WebHome
+Provides: flagpoll
+Arch: no_arch
+Version: 0.7.0
