@@ -1,12 +1,15 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+[Version 0.7.0 Released - 08.16.2006]==========================================
 2006-08-16 dshipton     New cleaned up options and better looking macros
                         --info and --print-pkg-options work great
                         VERSION: 0.7.0
+[Version 0.6.2 Released - 08.15.2006]==========================================
 2006-08-15 dshipton     Various code enhancements for OS level detection
                         VERSION: 0.6.2
 2006-08-15 dshipton     Fixed --no-deps option processing
                         VERSION: 0.6.1
+[Version 0.6.0 Released - 08.14.2006]==========================================
 2006-08-14 dshipton     Prefix is exported automatically, argument checking
                         enforced.
                         VERSION: 0.6.0
