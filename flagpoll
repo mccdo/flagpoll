@@ -29,7 +29,6 @@
 #    -----------------------------------------------------------------
 
 
-from optparse import OptionParser
 import sys, os, glob, os.path, copy, platform
 pj = os.path.join
 
@@ -172,7 +171,7 @@ class Utils:
 
    def getFlagpollVersion():
       FLAGPOLL_MAJOR_VERSION = 0
-      FLAGPOLL_MINOR_VERSION = 7
+      FLAGPOLL_MINOR_VERSION = 8
       FLAGPOLL_PATCH_VERSION = 0
       return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
    getFlagpollVersion = staticmethod(getFlagpollVersion)
@@ -1022,17 +1021,8 @@ class PkgInfo:
 class OptionsEvaluator:
    
    def __init__(self):
-      #self.mOptParser = self.GetOptionParser()
-      #self.mOptParser.print_help()
       if len(sys.argv) < 2:
          self.printHelp()
-      #(self.mOptions, self.mArgs) = self.mOptParser.parse_args()
-      #if self.mOptions.version:
-      #   print "%s.%s.%s" % Utils.getFlagpollVersion()
-      #   sys.exit(0)
-      #if len(self.mArgs) < 1:
-      #   self.mOptParser.print_help()
-      #   sys.exit(1)
 
    # This is only the args....(first arg is stripped)
    def evaluateArgs(self, args):
