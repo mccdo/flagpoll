@@ -1,5 +1,8 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+[Version 0.8.0 Released - 09.05.2006]==========================================
+2006-09-05 dshipton     Support added for multi-line definitions via a \ which
+                        is how pkg-config denotes it.
 [Version 0.7.0 Released - 08.16.2006]==========================================
 2006-08-16 dshipton     New cleaned up options and better looking macros
                         --info and --print-pkg-options work great
