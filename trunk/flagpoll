@@ -353,9 +353,21 @@ class Utils:
       lokals = {}
       lokals["fp_file_cwd"] = str(filename[:- ((len(os.path.basename(filename) ) + 1))])
       lines.append("prefix: ${prefix}")
+      append_next = False
+      append_dict = {}
+      append_key = ""
       for line in lines:
        line = line.strip()
        if not line:
+         continue
+       if append_next:
+         tmp = append_dict[append_key]
+         tmp = tmp[:-1] + " " + line
+         append_dict[append_key] = tmp
+         if tmp[-1:] == "\\":
+            append_next = True
+         else:
+            append_next = False
          continue
        if line.startswith("#"):
          continue
@@ -371,6 +383,11 @@ class Utils:
            except ValueError:
             flagDBG().out(flagDBG.WARN, "PkgInfo.parse", "%s has an invalid metadata file" % filename)
          lokals[name] = val
+         if val[-1:] == "\\":
+            append_next = True
+            append_dict = lokals
+            append_key = name
+         continue
        if col_pos < eq_pos and col_pos != -1 or eq_pos == -1 and col_pos !=-1: # exported variable
          name, val = line.split(':', 1)
          name = name.strip()
@@ -381,6 +398,10 @@ class Utils:
            except ValueError:
             flagDBG().out(flagDBG.ERROR, "PkgInfo.parse", "%s has an invalid metadata file" % filename)
          fvars[name] = val
+         if val[-1:] == "\\":
+            append_next = True
+            append_dict = fvars
+            append_key = name
       return fvars
    parsePcFile = staticmethod(parsePcFile)
 
