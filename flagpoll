@@ -340,8 +340,8 @@ class Utils:
       list_string = ""
       for item in gen_list:
          if len(item) > 0:
-            list_string+=str(item)
-            list_string+=" "
+            list_string += str(item)
+            list_string += " "
       print list_string.strip()
    printList = staticmethod(printList)
 
@@ -372,7 +372,7 @@ class Utils:
          continue
        eq_pos = line.find('=')
        col_pos = line.find(':')
-       if eq_pos < col_pos and eq_pos != -1 or col_pos == -1 and eq_pos !=-1: # local variable
+       if eq_pos < col_pos and eq_pos != -1 or col_pos == -1 and eq_pos != -1: # local variable
          name, val = line.split('=', 1)
          name = name.strip()
          val = val.strip()
@@ -387,7 +387,7 @@ class Utils:
             append_dict = lokals
             append_key = name
          continue
-       if col_pos < eq_pos and col_pos != -1 or eq_pos == -1 and col_pos !=-1: # exported variable
+       if col_pos < eq_pos and col_pos != -1 or eq_pos == -1 and col_pos != -1: # exported variable
          name, val = line.split(':', 1)
          name = name.strip()
          val = val.strip()
@@ -413,10 +413,10 @@ class flagDBG(object):
 #      2 - WARN
 #      3 - ERROR
 
-   VERBOSE=0
-   INFO=1
-   WARN=2
-   ERROR=3
+   VERBOSE = 0
+   INFO    = 1
+   WARN    = 2
+   ERROR   = 3
 
    __initialized = False
 
@@ -430,7 +430,7 @@ class flagDBG(object):
          return
       flagDBG.__initialized = True
       self.mLevel = self.WARN
-      self.mLevelList = ["VERBOSE","INFO","WARN","ERROR"]
+      self.mLevelList = ["VERBOSE", "INFO", "WARN", "ERROR"]
 
    def setLevel(self, level):
       if level <= 3:
@@ -612,7 +612,7 @@ class DepResolutionSystem(object):
       while not self.mResolvedPackageList:
          if(self.mAgentChangeList[agentChangeNumber]):
             if self.mAgentChangeList[agentChangeNumber] in self.mInvalidPackageList:
-               agentChangeNumber+=1
+               agentChangeNumber += 1
             else:
                if(self.mAgentChangeList[agentChangeNumber].getViablePackages()):
                   flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps",
@@ -624,7 +624,7 @@ class DepResolutionSystem(object):
                                 "No combinations.. Resetting " +
                                 self.mAgentChangeList[agentChangeNumber].getName())
                   self.mAgentChangeList[agentChangeNumber].reset()
-                  agentChangeNumber+=1
+                  agentChangeNumber += 1
          self.resolveHelper() 
          self.updateResolvedPackages()
          self.mSatisfied = (len(self.mResolvedPackageList) != 0)      
@@ -715,9 +715,9 @@ class PkgAgent:
                      ver_to_filt = req_string_list[i+2]
                      new_filter = Filter("Version", lambda x: x >= ver_to_filt)
                   else:
-                     i+=1
+                     i += 1
                else:
-                  i+=1
+                  i += 1
                dep_list.append(new_agent)
                if new_filter:
                   i+=3
@@ -730,7 +730,7 @@ class PkgAgent:
                        "List is:" + str([pkg.getName() for pkg in dep_list]))
       self.mAgentDependList = dep_list
 
-   def filtersChanged(self,packageList):
+   def filtersChanged(self, packageList):
       tf_list = [self.mFiltersChanged]
       if self.mName not in packageList:
          packageList.append(self.mName)
@@ -828,7 +828,7 @@ class Filter:
             ret_pkg_list.append(pkg)
             
       # Now sort
-      ret_pkg_list.sort(lambda lhs,rhs: cmp(lhs.getVariable(self.mVarName),
+      ret_pkg_list.sort(lambda lhs, rhs: cmp(lhs.getVariable(self.mVarName),
                                             rhs.getVariable(self.mVarName)))
       
       return ret_pkg_list
@@ -940,11 +940,11 @@ class PkgDB(object):
                        "Process these pc files: %s" % str(glob_list))
          for g in glob_list: # Get key name and add file to value list in dictionary
             key = os.path.basename(g)[:-3]   # Strip .pc off the filename...rstrip no worky
-            pc_dict.setdefault(key,[]).append(g)
+            pc_dict.setdefault(key, []).append(g)
       for f in Utils.getFileList():
          if f.endswith(".pc"):
             key = os.path.basename(f)[:-3]   # Strip .pc off the filename...rstrip no worky
-            pc_dict.setdefault(key,[]).append(f)
+            pc_dict.setdefault(key, []).append(f)
       return pc_dict # { "key", [ "list", "of", "corresponding", "pc", "files"] }
 
    def populatePkgInfoDBPcFiles(self):
@@ -984,7 +984,7 @@ class PkgDB(object):
          provides_string = provides_string.replace(')', ' ')
          for key in provides_string.split(" "):
             if len(key) > 0:
-               self.mPkgInfos.setdefault(key,[]).append(PkgInfo(key, filename, "fpc", var_dict))
+               self.mPkgInfos.setdefault(key, []).append(PkgInfo(key, filename, "fpc", var_dict))
 
 class PkgInfo:
    """ Holds the information for a package file on the system. These however
