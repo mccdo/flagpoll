@@ -1,5 +1,7 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+2006-09-05 dshipton     Enable recursive package dependencies
+                        VERSION: 0.8.1
 [Version 0.8.0 Released - 09.13.2006]==========================================
 2006-09-05 dshipton     Support added for multi-line definitions via a \ which
                         is how pkg-config denotes it.
