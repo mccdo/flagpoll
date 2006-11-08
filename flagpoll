@@ -526,7 +526,7 @@ class DepResolutionSystem(object):
          return self.getAgent(name)
       else:
          agent = PkgAgent(name)
-         flagDBG().out(flagDBG.INFO, "DepResSys.createResloveAgent", "Adding %s" % name)
+         flagDBG().out(flagDBG.INFO, "DepResSys.createResolveAgent", "Adding %s" % name)
          self.addResolveAgent(agent)
          return agent
 
@@ -664,9 +664,9 @@ class PkgAgent:
       else:
          self.mCurrentPackage = []
       self.mAgentDependList = [] # Agents that it depends on/needs to update
-      #self.makeDependList()
       self.mFiltersChanged = True
       self.mCheckDepends = True
+      #self.makeDependList()
 
 
    def getName(self):
@@ -745,6 +745,8 @@ class PkgAgent:
                        "Package: %s" % self.mName)
          pkgs.append(self.mCurrentPackage)
          packageList.append(self.mName)
+         # Make depend list if we are supposed to
+         self.makeDependList()
          for pkg in self.mAgentDependList:
             pkgs.extend(pkg.getCurrentPackageList(packageList))
       return pkgs
