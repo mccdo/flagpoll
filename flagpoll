@@ -593,7 +593,7 @@ class DepResolutionSystem(object):
    # at the end ask for pkglist..if it comes back empty then we don't
    # have a usable configuration for those packages
    def resolveDeps(self):
-      self.resolveHelper() 
+      self.resolveHelper()
       if not self.mMadeDependList:
          for agent in self.mResolveAgents:
             agent.makeDependList()
@@ -656,18 +656,15 @@ class PkgAgent:
 
       if len(self.mBasePackageList) == 0:
          flagDBG().out(flagDBG.ERROR, "PkgAgent", "No viable packages for: %s" % self.mName)
-         
 
       self.mViablePackageList = copy.deepcopy(self.mBasePackageList)
       if self.mViablePackageList:
          self.mCurrentPackage = self.mViablePackageList[0]
       else:
          self.mCurrentPackage = []
-      self.mAgentDependList = [] # Agents that it depends on/needs to update
       self.mFiltersChanged = True
       self.mCheckDepends = True
-      self.mMadeDependsList = False
-      #self.makeDependList()
+      self.mAgentDependList = []
 
 
    def getName(self):
@@ -678,9 +675,6 @@ class PkgAgent:
 
    #Filter("Version", lambda x: x == "4.5")
    def makeDependList(self):
-      if self.mMadeDependsList:
-         return
-
       if not self.mCheckDepends:
          self.mAgentDependList = []
          return 
@@ -739,7 +733,6 @@ class PkgAgent:
          flagDBG().out(flagDBG.VERBOSE, "PkgAgent.makeDependList", 
                        str(self.mName) + " : List is:" + str([pkg.getName() for pkg in dep_list]))
       self.mAgentDependList = dep_list
-      self.mMadeDependsList = True
 
    def filtersChanged(self, packageList):
       tf_list = [self.mFiltersChanged]
@@ -757,7 +750,9 @@ class PkgAgent:
          pkgs.append(self.mCurrentPackage)
          packageList.append(self.mName)
          # Make depend list if we are supposed to
+         self.updateFilters()
          self.makeDependList()
+         
          for pkg in self.mAgentDependList:
             pkgs.extend(pkg.getCurrentPackageList(packageList))
       return pkgs
@@ -785,6 +780,8 @@ class PkgAgent:
          return ret_val
 
    def update(self, agentVisitedList, agentChangeList):
+      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.update",
+                    "%s" % self.mName)
       if self.mName in agentVisitedList:
          return
 
