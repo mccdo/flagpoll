@@ -666,6 +666,7 @@ class PkgAgent:
       self.mAgentDependList = [] # Agents that it depends on/needs to update
       self.mFiltersChanged = True
       self.mCheckDepends = True
+      self.mMadeDependsList = False
       #self.makeDependList()
 
 
@@ -677,6 +678,9 @@ class PkgAgent:
 
    #Filter("Version", lambda x: x == "4.5")
    def makeDependList(self):
+      if self.mMadeDependsList:
+         return
+
       if not self.mCheckDepends:
          self.mAgentDependList = []
          return 
@@ -729,6 +733,7 @@ class PkgAgent:
          flagDBG().out(flagDBG.VERBOSE, "PkgAgent.makeDependList", 
                        "List is:" + str([pkg.getName() for pkg in dep_list]))
       self.mAgentDependList = dep_list
+      self.mMadeDependsList = True
 
    def filtersChanged(self, packageList):
       tf_list = [self.mFiltersChanged]
