@@ -1,0 +1,2 @@
+ARGS="a --cflags"
+RESULTS="-I/a"
