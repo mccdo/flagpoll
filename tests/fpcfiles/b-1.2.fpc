@@ -3,4 +3,4 @@ Provides: b
 Arch : no_arch
 Version: 1.2
 Requires:
-Cflags: -I/b
+Cflags: -I/b12
