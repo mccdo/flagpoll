@@ -567,7 +567,7 @@ class DepResolutionSystem(object):
       self.mResolvedPackageList = pkg_list
 
    def getPackages(self):
-      flagDBG().out(flagDBG.VERBOSE, "DepResSys.getPackages",
+      flagDBG().out(flagDBG.INFO, "DepResSys.getPackages",
                     "Generating list of valid packages ")
                     #str([pkg.getCurrentPackage.getName() for pkg in self.mResolvedPackageList]))
       # If this comes back empty then there isn't a valid set of packages to use
@@ -582,7 +582,7 @@ class DepResolutionSystem(object):
       self.resolveAgentsChanged = True
       while self.resolveAgentsChanged:
          for agent in self.mResolveAgents:
-            flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveHelper",
+            flagDBG().out(flagDBG.INFO, "DepResSys.resolveHelper",
                           "Updating " + agent.getName())
             agent.update(self.mAgentsVisitedList, self.mAgentChangeList)
          self.resolveAgentsChanged = self.checkFiltersChanged()
@@ -615,12 +615,12 @@ class DepResolutionSystem(object):
                agentChangeNumber += 1
             else:
                if(self.mAgentChangeList[agentChangeNumber].getViablePackages()):
-                  flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps",
+                  flagDBG().out(flagDBG.INFO, "DepResSys.resolveDeps",
                                 "Removing bad pkg from " +
                                 self.mAgentChangeList[agentChangeNumber].getName())
                   self.mInvalidPackageList.append(self.mAgentChangeList[agentChangeNumber].removeCurrentPackage())
                else:
-                  flagDBG().out(flagDBG.VERBOSE, "DepResSys.resolveDeps",
+                  flagDBG().out(flagDBG.INFO, "DepResSys.resolveDeps",
                                 "No combinations.. Resetting " +
                                 self.mAgentChangeList[agentChangeNumber].getName())
                   self.mAgentChangeList[agentChangeNumber].reset()
@@ -641,7 +641,7 @@ class PkgAgent:
          flagDBG().out(flagDBG.ERROR, "PkgAgent", "Package Agent %s already exists" % self.mName)
          
       self.mName = name
-      flagDBG().out(flagDBG.VERBOSE, "PkgAgent", "Creating:" + str(self.mName))
+      flagDBG().out(flagDBG.INFO, "PkgAgent", "Creating:" + str(self.mName))
 
       if not PkgDB().exists(name):
          flagDBG().out(flagDBG.ERROR, "PkgAgent", "No info for package: %s" % self.mName)
@@ -730,7 +730,7 @@ class PkgAgent:
                flagDBG().out(flagDBG.ERROR, "PkgAgent.makeDependList",
                              "Package %s depends on %s but does not seem to be installed." % (self.mName, str(req_string_list[i])))
 
-         flagDBG().out(flagDBG.VERBOSE, "PkgAgent.makeDependList", 
+         flagDBG().out(flagDBG.INFO, "PkgAgent.makeDependList", 
                        str(self.mName) + " : List is:" + str([pkg.getName() for pkg in dep_list]))
       self.mAgentDependList = dep_list
 
@@ -745,7 +745,7 @@ class PkgAgent:
    def getCurrentPackageList(self, packageList):
       pkgs = []
       if self.mName not in packageList:
-         flagDBG().out(flagDBG.VERBOSE, "PkgAgent.getCurrentPackageList",
+         flagDBG().out(flagDBG.INFO, "PkgAgent.getCurrentPackageList",
                        "Package: %s" % self.mName)
          pkgs.append(self.mCurrentPackage)
          packageList.append(self.mName)
@@ -764,13 +764,13 @@ class PkgAgent:
    # Someone else usually places these on me
    # I keep track of those separately
    def addFilter(self, filter):
-      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.addFilter",
+      flagDBG().out(flagDBG.INFO, "PkgAgent.addFilter",
                     "Filter %s" % self.mName + " on %s." % filter.getVarName())
       self.mFiltersChanged = True
       self.mFilterList.append(filter)
 
    def removeCurrentPackage(self):
-      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.removeCurrentPackage",
+      flagDBG().out(flagDBG.INFO, "PkgAgent.removeCurrentPackage",
                     "Removing current package of %s" % self.mName)
       if self.mViablePackageList:
          ret_val = self.mViablePackageList[0] in self.mBasePackageList
@@ -780,7 +780,7 @@ class PkgAgent:
          return ret_val
 
    def update(self, agentVisitedList, agentChangeList):
-      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.update",
+      flagDBG().out(flagDBG.INFO, "PkgAgent.update",
                     "%s" % self.mName)
       if self.mName in agentVisitedList:
          return
@@ -801,7 +801,7 @@ class PkgAgent:
    def updateFilters(self):
       for filt in self.mFilterList:
          self.mViablePackageList = filt.filter(self.mViablePackageList)
-      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.updateFilters",
+      flagDBG().out(flagDBG.INFO, "PkgAgent.updateFilters",
                      "%s has " % self.mName + str(len(self.mViablePackageList)) + " left")
       if len(self.mViablePackageList) > 0:
          self.mCurrentPackage = self.mViablePackageList[0]
@@ -810,7 +810,7 @@ class PkgAgent:
       
 
    def reset(self):
-      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.reset", "Resetting package: %s" % self.mName)
+      flagDBG().out(flagDBG.INFO, "PkgAgent.reset", "Resetting package: %s" % self.mName)
       self.mViablePackageList = self.mBasePackageList
       if self.mViablePackageList:
          self.mCurrentPacakge = self.mViablePackageList[0]
@@ -839,11 +839,11 @@ class Filter:
       for pkg in pkg_info_list:
          var = pkg.getVariable(self.mVarName)
          if self.mTestCallable(var):
-            flagDBG().out(flagDBG.VERBOSE, "Filter", "Passed: %s:" % pkg.getName() +
+            flagDBG().out(flagDBG.INFO, "Filter", "Passed: %s:" % pkg.getName() +
                      " %s is " % self.mVarName + str(var))
             ret_pkg_list.append(pkg)
          else:
-            flagDBG().out(flagDBG.VERBOSE, "Filter", "Failed: %s:" % pkg.getName() +
+            flagDBG().out(flagDBG.INFO, "Filter", "Failed: %s:" % pkg.getName() +
                      " %s is " % self.mVarName + str(var))
             
       # Now sort
@@ -1052,8 +1052,10 @@ class OptionsEvaluator:
       # shown below because they are sub-options of an option below (--strip-dups)
       
       for option in args:
-         if option.startswith("--debug"):
+         if option.startswith("--debug-max"):
             flagDBG().setLevel(flagDBG.VERBOSE)
+         if option.startswith("--debug"):
+            flagDBG().setLevel(flagDBG.INFO)
          elif option.startswith("--from-file"):
             val_start = option.find('=') + 1
             file = option[val_start:]
