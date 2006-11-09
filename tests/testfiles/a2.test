@@ -1,2 +1,2 @@
 ARGS="a --cflags --exact-version=2.2.1"
-RESULTS="-I/a221 -I/b12 -Ic101"
+RESULTS="-I/a221 -I/b12 -Ic10"
