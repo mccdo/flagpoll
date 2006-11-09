@@ -1,0 +1,6 @@
+Name: a
+Provides: a
+Arch : no_arch
+Version: 3.2.1
+Requires: b = 1.4.4 c = 1.0.1
+Cflags: -I/a321
