@@ -757,7 +757,7 @@ class PkgAgent:
          pkgs.append(self.mCurrentPackage)
          packageList.append(self.mName)
          # Make depend list if we are supposed to
-         #self.makeDependList()
+         self.makeDependList()
          for pkg in self.mAgentDependList:
             pkgs.extend(pkg.getCurrentPackageList(packageList))
       return pkgs
