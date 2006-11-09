@@ -2,5 +2,5 @@ Name: b
 Provides: b
 Arch : no_arch
 Version: 1.2
-Requires:
+Requires: c = 1.0
 Cflags: -I/b12

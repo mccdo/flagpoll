@@ -2,5 +2,5 @@ Name: a
 Provides: a
 Arch : no_arch
 Version: 2.2.1
-Requires: b = 1.2 c = 1.0
+Requires: b = 1.2
 Cflags: -I/a221
