@@ -33,7 +33,7 @@ dnl
 AC_DEFUN([AM_PATH_FLAGPOLL],
 [
    if test "x$FLAGPOLL" = "x" ; then
-     _FLAGPOLL_SETUP()
+     _FLAGPOLL_SETUP([$1], [$2], [$3])
    fi
 ])
 
