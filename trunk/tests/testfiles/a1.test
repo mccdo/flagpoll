@@ -1,2 +1,2 @@
-ARGS="a --cflags"
-RESULTS="-I/a"
+ARGS="a --cflags --exact-version=1.2.3"
+RESULTS="-I/a123"
