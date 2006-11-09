@@ -508,7 +508,7 @@ class DepResolutionSystem(object):
       if platform.system().startswith("IRIX"):
          arch_list.append(requires)
       
-      new_filter = Filter("Arch", lambda x: x in arch_list)
+      new_filter = Filter("Arch", lambda x,v=arch_list: x in v)
       self.addFilter(new_filter)
 
 
@@ -569,7 +569,7 @@ class DepResolutionSystem(object):
    def getPackages(self):
       flagDBG().out(flagDBG.VERBOSE, "DepResSys.getPackages",
                     "Generating list of valid packages ")
-                    #str([pkg.getCurrentPa.getName() for pkg in self.mResolvedPackageList]))
+                    #str([pkg.getCurrentPackage.getName() for pkg in self.mResolvedPackageList]))
       # If this comes back empty then there isn't a valid set of packages to use
       self.updateResolvedPackages()
       return self.mResolvedPackageList
@@ -593,12 +593,12 @@ class DepResolutionSystem(object):
    # at the end ask for pkglist..if it comes back empty then we don't
    # have a usable configuration for those packages
    def resolveDeps(self):
+      self.resolveHelper() 
       if not self.mMadeDependList:
          for agent in self.mResolveAgents:
             agent.makeDependList()
          self.mMadeDependList = True
 
-      self.resolveHelper() 
       self.updateResolvedPackages()
       # Check if the first round through we found something
       # Otherwise we need to start removing packages that aren't viable
@@ -710,14 +710,20 @@ class PkgAgent:
                new_agent = DepResolutionSystem().createAgent(req_string_list[i])
                if len(req_string_list) > i+1:
                   if req_string_list[i+1] == "=":
-                     ver_to_filt = req_string_list[i+2]
-                     new_filter = Filter("Version", lambda x: x == ver_to_filt)
+                     ver_to_filt = req_string_list[i+2].strip()
+                     new_filter = Filter("Version", lambda x,v=ver_to_filt: x == v)
                   elif req_string_list[i+1] == "<=":
-                     ver_to_filt = req_string_list[i+2]
-                     new_filter = Filter("Version", lambda x: x <= ver_to_filt)
+                     ver_to_filt = req_string_list[i+2].strip()
+                     new_filter = Filter("Version", lambda x,v=ver_to_filt: x <= v)
                   elif req_string_list[i+1] == ">=":
-                     ver_to_filt = req_string_list[i+2]
-                     new_filter = Filter("Version", lambda x: x >= ver_to_filt)
+                     ver_to_filt = req_string_list[i+2].strip()
+                     new_filter = Filter("Version", lambda x,v=ver_to_filt: x >= v)
+                  elif req_string_list[i+1] == ">":
+                     ver_to_filt = req_string_list[i+2].strip()
+                     new_filter = Filter("Version", lambda x,v=ver_to_filt: x > v)
+                  elif req_string_list[i+1] == "<":
+                     ver_to_filt = req_string_list[i+2].strip()
+                     new_filter = Filter("Version", lambda x,v=ver_to_filt: x < v)
                   else:
                      i += 1
                else:
@@ -731,7 +737,7 @@ class PkgAgent:
                              "Package %s depends on %s but does not seem to be installed." % (self.mName, str(req_string_list[i])))
 
          flagDBG().out(flagDBG.VERBOSE, "PkgAgent.makeDependList", 
-                       "List is:" + str([pkg.getName() for pkg in dep_list]))
+                       str(self.mName) + " : List is:" + str([pkg.getName() for pkg in dep_list]))
       self.mAgentDependList = dep_list
       self.mMadeDependsList = True
 
@@ -751,7 +757,7 @@ class PkgAgent:
          pkgs.append(self.mCurrentPackage)
          packageList.append(self.mName)
          # Make depend list if we are supposed to
-         self.makeDependList()
+         #self.makeDependList()
          for pkg in self.mAgentDependList:
             pkgs.extend(pkg.getCurrentPackageList(packageList))
       return pkgs
@@ -764,7 +770,7 @@ class PkgAgent:
    # I keep track of those separately
    def addFilter(self, filter):
       flagDBG().out(flagDBG.VERBOSE, "PkgAgent.addFilter",
-                    "Adding a Filter to %s" % self.mName)
+                    "Filter %s" % self.mName + " on %s." % filter.getVarName())
       self.mFiltersChanged = True
       self.mFilterList.append(filter)
 
@@ -798,6 +804,8 @@ class PkgAgent:
    def updateFilters(self):
       for filt in self.mFilterList:
          self.mViablePackageList = filt.filter(self.mViablePackageList)
+      flagDBG().out(flagDBG.VERBOSE, "PkgAgent.updateFilters",
+                     "%s has " % self.mName + str(len(self.mViablePackageList)) + " left")
       if len(self.mViablePackageList) > 0:
          self.mCurrentPackage = self.mViablePackageList[0]
       else:
@@ -824,15 +832,22 @@ class Filter:
    def __init__(self, variableName, testCallable):
       self.mVarName = variableName
       self.mTestCallable = testCallable
+
+   def getVarName(self):
+      return self.mVarName
       
    def filter(self, pkg_info_list):
       ret_pkg_list = []
-      
       # Filter first
       for pkg in pkg_info_list:
          var = pkg.getVariable(self.mVarName)
          if self.mTestCallable(var):
+            flagDBG().out(flagDBG.VERBOSE, "Filter", "Passed: %s:" % pkg.getName() +
+                     " %s is " % self.mVarName + str(var))
             ret_pkg_list.append(pkg)
+         else:
+            flagDBG().out(flagDBG.VERBOSE, "Filter", "Failed: %s:" % pkg.getName() +
+                     " %s is " % self.mVarName + str(var))
             
       # Now sort
       ret_pkg_list.sort(lambda lhs, rhs: cmp(lhs.getVariable(self.mVarName),
@@ -1068,7 +1083,7 @@ class OptionsEvaluator:
          if args[curr_arg].startswith("--atleast-version"):
             val_start = args[curr_arg].find('=') + 1
             atleast_version = args[curr_arg][val_start:]
-            atleast_filter = Filter("Version", lambda x: x >= atleast_version)
+            atleast_filter = Filter("Version", lambda x,v=atleast_version: x >= v)
             curr_arg = curr_arg + 1
             if agent is not None:
                agent.addFilter(atleast_filter)
@@ -1103,7 +1118,7 @@ class OptionsEvaluator:
          if args[curr_arg].startswith("--exact-version"):
             val_start = args[curr_arg].find('=') + 1
             exact_version = args[curr_arg][val_start:]
-            exact_filter = Filter("Version", lambda x: x == exact_version)
+            exact_filter = Filter("Version", lambda x,v=exact_version: x == v)
             curr_arg = curr_arg + 1
             if agent is not None:
                agent.addFilter(exact_filter)
@@ -1119,7 +1134,7 @@ class OptionsEvaluator:
          if args[curr_arg].startswith("--from-file"):
             val_start = args[curr_arg].find('=') + 1
             file = args[curr_arg][val_start:]
-            file_filter = Filter("FlagpollFilename", lambda x: x == file)
+            file_filter = Filter("FlagpollFilename", lambda x,f=file: x == f)
             curr_arg = curr_arg + 1
             if agent is not None:
                agent.addFilter(file_filter)
@@ -1172,35 +1187,35 @@ class OptionsEvaluator:
                op_start = req_string.find("<=")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 2:]
-               new_filter = Filter(req_var, lambda x: x <= req_val)
+               new_filter = Filter(req_var, lambda x,v=req_val: x <= v)
                DepResolutionSystem().addFilter(new_filter)
                continue
             if req_string.find(">=") != -1:
                op_start = req_string.find(">=")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 2:]
-               new_filter = Filter(req_var, lambda x: x >= req_val)
+               new_filter = Filter(req_var, lambda x,v=req_val: x >= v)
                DepResolutionSystem().addFilter(new_filter)
                continue
             if req_string.find(">") != -1:
                op_start = req_string.find(">")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 1:]
-               new_filter = Filter(req_var, lambda x: x > req_val)
+               new_filter = Filter(req_var, lambda x,v=req_val: x > v)
                DepResolutionSystem().addFilter(new_filter)
                continue
             if req_string.find("<") != -1:
                op_start = req_string.find("<")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 1:]
-               new_filter = Filter(req_var, lambda x: x < req_val)
+               new_filter = Filter(req_var, lambda x,v=req_val: x < v)
                DepResolutionSystem().addFilter(new_filter)
                continue
             if req_string.find("=") != -1:
                op_start = req_string.find("=")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 1:]
-               new_filter = Filter(req_var, lambda x: x == req_val)
+               new_filter = Filter(req_var, lambda x,v=req_val: x == v)
                DepResolutionSystem().addFilter(new_filter)
                continue
             if req_string.find("=") == -1:
@@ -1221,35 +1236,35 @@ class OptionsEvaluator:
                op_start = req_string.find("<=")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 2:]
-               new_filter = Filter(req_var, lambda x: x <= req_val)
+               new_filter = Filter(req_var, lambda x,v=req_val: x <= v)
                agent.addFilter(new_filter)
                continue
             if req_string.find(">=") != -1:
                op_start = req_string.find(">=")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 2:]
-               new_filter = Filter(req_var, lambda x: x >= req_val)
+               new_filter = Filter(req_var, lambda x,v=req_val: x >= v)
                agent.addFilter(new_filter)
                continue
             if req_string.find(">") != -1:
                op_start = req_string.find(">")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 1:]
-               new_filter = Filter(req_var, lambda x: x > req_val)
+               new_filter = Filter(req_var, lambda x,v=req_val: x > v)
                agent.addFilter(new_filter)
                continue
             if req_string.find("<") != -1:
                op_start = req_string.find("<")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 1:]
-               new_filter = Filter(req_var, lambda x: x < req_val)
+               new_filter = Filter(req_var, lambda x,v=req_val: x < v)
                agent.addFilter(new_filter)
                continue
             if req_string.find("=") != -1:
                op_start = req_string.find("=")
                req_var = req_string[:op_start]
                req_val = req_string[op_start + 1:]
-               new_filter = Filter(req_var, lambda x: x == req_val)
+               new_filter = Filter(req_var, lambda x,v=req_val: x == v)
                agent.addFilter(new_filter)
                continue
             if req_string.find("=") == -1:
@@ -1285,7 +1300,7 @@ class OptionsEvaluator:
          if args[curr_arg].startswith("--max-release"):
             val_start = args[curr_arg].find('=') + 1
             max_release = args[curr_arg][val_start:]
-            max_filter = Filter("Version", lambda x: x.startswith(max_release))
+            max_filter = Filter("Version", lambda x,v=max_release: x.startswith(v))
             curr_arg = curr_arg + 1
             if agent is not None:
                agent.addFilter(max_filter)
