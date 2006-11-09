@@ -7,7 +7,7 @@ do
    res=`flagpoll $ARGS`
    if test "$RESULTS" != "$res"
    then
-      echo "$x failed, $RESULTS is not $res"
+      echo "$x failed, '$RESULTS' is not '$res'"
    else
       echo "$x passed"
    fi
