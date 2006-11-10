@@ -1,5 +1,6 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+[Version 0.8.1 Released - 11.10.2006]==========================================
 2006-11-10 dshipton     Better debug output
 2006-11-08 dshipton     Enable recursive package dependencies
                         VERSION: 0.8.1
