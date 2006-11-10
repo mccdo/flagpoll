@@ -1054,7 +1054,7 @@ class OptionsEvaluator:
       # shown below because they are sub-options of an option below (--strip-dups)
       
       for option in args:
-         if option.startswith("--debug-max"):
+         if option.startswith("--verbose-debug"):
             flagDBG().setLevel(flagDBG.VERBOSE)
          if option.startswith("--debug"):
             flagDBG().setLevel(flagDBG.INFO)
@@ -1475,7 +1475,8 @@ class OptionsEvaluator:
       print "  --help                show this help message and exit"
       print "  --version             output version of flagpoll"
       print "  --list-all            list all known packages"
-      print "  --debug               show verbose debug information"
+      print "  --debug               show debug information"
+      print "  --verbose-debug       show verbose debug information"
       print "  --extra-paths=EXTRA_PATHS"
       print "                        extra paths for flagpoll to search for meta-data files"
       print "  --concat              concatenate all output and output as one line"
@@ -1530,7 +1531,6 @@ class OptionsEvaluator:
 def main():
    # GO!
    # Initialize singletons and the start evaluating
-   #print sys.argv[1:]
    my_dbg = flagDBG()
    my_dep_system = DepResolutionSystem()
    opt_evaluator = OptionsEvaluator()
