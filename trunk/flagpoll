@@ -651,6 +651,8 @@ class PkgAgent:
       self.mFilterList = []
       self.mFilterList.extend(DepResolutionSystem().getFilters())
       self.mBasePackageList = PkgDB().getPkgInfos(name)
+      self.mBasePackageList.sort(lambda lhs, rhs: cmp(rhs.getVariable('Version'),
+                                            lhs.getVariable('Version')))
       for filt in self.mFilterList:
          self.mBasePackageList = filt.filter(self.mBasePackageList)
 
@@ -847,8 +849,8 @@ class Filter:
                      " %s is " % self.mVarName + str(var))
             
       # Now sort
-      ret_pkg_list.sort(lambda lhs, rhs: cmp(lhs.getVariable(self.mVarName),
-                                            rhs.getVariable(self.mVarName)))
+      ret_pkg_list.sort(lambda lhs, rhs: cmp(rhs.getVariable(self.mVarName),
+                                            lhs.getVariable(self.mVarName)))
       
       return ret_pkg_list
 
