@@ -1,0 +1,6 @@
+Name: A
+Description: A
+Version: 1
+Provides: a
+Cflags: -I/a1
+Arch: no_arch

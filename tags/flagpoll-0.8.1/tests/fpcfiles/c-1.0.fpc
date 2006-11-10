@@ -1,0 +1,6 @@
+Name: c
+Provides: c
+Arch : no_arch
+Version: 1.0
+Requires: b >= 1.0
+Cflags: -I/c10
