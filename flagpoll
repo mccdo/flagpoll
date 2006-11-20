@@ -167,7 +167,15 @@ class Utils:
    EXTRA_FLAGPOLL_FILES = ""
    path_list_cache = None                         # Cache of found path lists.  (only calcuate once)
    KEEP_DUPS = False
+   FLAGPOLL_LIST_OF_POSSIBLE_ERRORS = []
 
+   def addPossibleError(pos_err):
+      Utils.FLAGPOLL_LIST_OF_POSSIBLE_ERRORS.append(pos_err)
+   addPossibleError = staticmethod(addPossibleError)
+      
+   def getPossibleErrors():
+      return Utils.stripDupInList(Utils.FLAGPOLL_LIST_OF_POSSIBLE_ERRORS)
+   getPossibleErrors = staticmethod(getPossibleErrors)
 
    def getFlagpollVersion():
       FLAGPOLL_MAJOR_VERSION = 0
@@ -442,6 +450,11 @@ class flagDBG(object):
             print self.mLevelList[level] + ":" + str(obj) + ": " + str(message)
          else:
             print self.mLevelList[level] + ": " + str(message)
+         errs = Utils.getPossibleErrors()
+         if len(errs) > 0:
+            print "Possible culprits:"
+            for pos_err in errs:
+               print "   " + str(pos_err)
          sys.exit(1)
       if level >= self.mLevel: 
          print self.mLevelList[level] + ":" + str(obj) + ": " + str(message)
@@ -808,6 +821,8 @@ class PkgAgent:
       if len(self.mViablePackageList) > 0:
          self.mCurrentPackage = self.mViablePackageList[0]
       else:
+         for f in self.mFilterList:
+            Utils.addPossibleError(str(self.mName) + " -> " + str(f.getVarName()))
          self.mCurrentPackage = []
       
 
