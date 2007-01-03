@@ -1069,11 +1069,12 @@ class OptionsEvaluator:
       # shown below because they are sub-options of an option below (--strip-dups)
       
       for option in args:
+         print option
          if option.startswith("--verbose-debug"):
             flagDBG().setLevel(flagDBG.VERBOSE)
          if option.startswith("--debug"):
             flagDBG().setLevel(flagDBG.INFO)
-         elif option.startswith("--from-file"):
+         elif option.startswith("-i-from-file"):
             val_start = option.find('=') + 1
             file = option[val_start:]
             Utils.EXTRA_FLAGPOLL_FILES = Utils.EXTRA_FLAGPOLL_FILES + ":" + file
@@ -1374,7 +1375,7 @@ class OptionsEvaluator:
                sys.exit(1)
             continue
 
-         if args[curr_arg] != "--debug":
+         if args[curr_arg] != "--debug" and args[curr_arg] != "--verbose-debug":
             flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "Invalid Option: %s" % args[curr_arg])
 
          curr_arg = curr_arg + 1
