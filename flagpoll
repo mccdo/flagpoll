@@ -1069,7 +1069,6 @@ class OptionsEvaluator:
       # shown below because they are sub-options of an option below (--strip-dups)
       
       for option in args:
-         print option
          if option.startswith("--verbose-debug"):
             flagDBG().setLevel(flagDBG.VERBOSE)
          if option.startswith("--debug"):
