@@ -1,5 +1,8 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+2007-01-08 dshipton     Print errors to stderr
+                        VERSION: 0.8.2
+2006-11-20 dshipton     Try to identify possible culprits when failing
 [Version 0.8.1 Released - 11.10.2006]==========================================
 2006-11-10 dshipton     Better debug output
 2006-11-08 dshipton     Enable recursive package dependencies
