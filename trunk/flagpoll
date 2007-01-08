@@ -449,12 +449,12 @@ class flagDBG(object):
          if self.mLevel == self.VERBOSE:
             print self.mLevelList[level] + ":" + str(obj) + ": " + str(message)
          else:
-            print self.mLevelList[level] + ": " + str(message)
+            sys.stderr.write(self.mLevelList[level] + ": " + str(message) + "\n")
          errs = Utils.getPossibleErrors()
          if len(errs) > 0:
-            print "Possible culprits:"
+            sys.stderr.write("Possible culprits:\n")
             for pos_err in errs:
-               print "   " + str(pos_err)
+               sys.stderr.write( "   " + str(pos_err) + "\n" )
          sys.exit(1)
       if level >= self.mLevel: 
          print self.mLevelList[level] + ":" + str(obj) + ": " + str(message)
