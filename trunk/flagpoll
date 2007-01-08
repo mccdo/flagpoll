@@ -1073,7 +1073,7 @@ class OptionsEvaluator:
             flagDBG().setLevel(flagDBG.VERBOSE)
          if option.startswith("--debug"):
             flagDBG().setLevel(flagDBG.INFO)
-         elif option.startswith("-i-from-file"):
+         elif option.startswith("--from-file"):
             val_start = option.find('=') + 1
             file = option[val_start:]
             Utils.EXTRA_FLAGPOLL_FILES = Utils.EXTRA_FLAGPOLL_FILES + ":" + file
