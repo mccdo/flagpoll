@@ -1,0 +1,7 @@
+Name: C
+Description: C
+Version: 3
+Provides: c
+Requires: b = 2 a = 1
+Arch: no_arch
+Cflags: -I/c3
