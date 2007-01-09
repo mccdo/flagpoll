@@ -1,0 +1,6 @@
+Name: a
+Provides: a
+Arch : no_arch
+Version: 1.2.3
+Requires:
+Cflags: -I/a123

@@ -1,0 +1,6 @@
+Name: b
+Provides: b
+Arch : no_arch
+Version: 1.4.4
+Requires:
+Cflags: -I/b144
