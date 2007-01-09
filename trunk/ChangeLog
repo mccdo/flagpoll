@@ -1,5 +1,6 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+[Version 0.8.2 Released - 01.09.2007]==========================================
 2007-01-08 dshipton     Print errors to stderr
                         VERSION: 0.8.2
 2006-11-20 dshipton     Try to identify possible culprits when failing
