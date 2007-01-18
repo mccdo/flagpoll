@@ -7,7 +7,7 @@ development. It enables developers total control over which
 packages, versions, architectures, etc. that they want to use meta-data from.
 
 ---- Use ----
-It is exactly the same as pkg-config usage with the following additions/considerations.
+It is almost the same as pkg-config usage with the following additions/considerations.
 
 --- Installation ---
 Flagpoll uses Python's distutils for installation. A basic install will look like:
