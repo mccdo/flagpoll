@@ -180,7 +180,7 @@ class Utils:
    def getFlagpollVersion():
       FLAGPOLL_MAJOR_VERSION = 0
       FLAGPOLL_MINOR_VERSION = 8
-      FLAGPOLL_PATCH_VERSION = 2
+      FLAGPOLL_PATCH_VERSION = 3
       return ( FLAGPOLL_MAJOR_VERSION, FLAGPOLL_MINOR_VERSION, FLAGPOLL_PATCH_VERSION )
    getFlagpollVersion = staticmethod(getFlagpollVersion)
 
@@ -209,12 +209,12 @@ class Utils:
             ld_path.extend(ld_path_flg)
 
       extra_paths = Utils.EXTRA_FLAGPOLL_SEARCH_PATHS.split(os.pathsep)
-      path_list = ["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig",
-                   "/usr/lib64/flagpoll", "/usr/lib/flagpoll", "/usr/share/flagpoll"]
-      path_list.extend(pkg_cfg_dir)
+      path_list = extra_paths
       path_list.extend(flg_cfg_dir)
-      path_list.extend(extra_paths)
+      path_list.extend(pkg_cfg_dir)
       path_list.extend(ld_path)
+      path_list.extend(["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig",
+                   "/usr/lib64/flagpoll", "/usr/lib/flagpoll", "/usr/share/flagpoll"])
       flagDBG().out(flagDBG.VERBOSE, "Utils.getPathList",
                     "Potential path list: " + str(path_list))
       path_list = [p for p in path_list if os.path.exists(p)]
