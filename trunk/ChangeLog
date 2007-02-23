@@ -1,5 +1,12 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+2007-02-23 dshipton     Search through path as follows:
+			User passed in paths --from-file=
+			FLAGPOLL_PATH
+			PKG_CONFIG_PATH
+			LD_LIBRARY_PATH
+			sytem paths
+                        VERSION: 0.8.3
 [Version 0.8.2 Released - 01.09.2007]==========================================
 2007-01-08 dshipton     Print errors to stderr
                         VERSION: 0.8.2
