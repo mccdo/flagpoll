@@ -1,4 +1,4 @@
-prefix=/usr
+prefix= ${fp_file_cwd}/../..
 
 Name: Flagpoll
 Description: Program for retrieving meta-data from installed packages.

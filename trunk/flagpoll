@@ -239,15 +239,21 @@ class Utils:
 
    def stripDupInList(gen_list):
       new_list = []
-      for item in gen_list:
-         item = item.strip()
+      list_len = len(gen_list)
+      i = 0
+      while i < list_len:
+         item = gen_list[i].strip()
          if Utils.KEEP_DUPS:
             if len(item) > 0:
                new_list.append(item)
             continue
+         if item == '-framework':
+            item = '%s %s' % (item, gen_list[i + 1])
+            i += 1
          if item not in new_list:
             if len(item) > 0:
                new_list.append(item)
+         i += 1
       return new_list
    stripDupInList = staticmethod(stripDupInList)
 
@@ -256,13 +262,20 @@ class Utils:
       # We do slightly dumb stripping though
       lib_list = []
       dir_list = []
-      for flg in flag_list:
-         flg = flg.strip()
+      list_len = len(flag_list)
+      i = 0
+      while i < list_len:
+         flg = flag_list[i].strip()
          if len(flg) > 0:
-            if flg.startswith("-L") or flg.startswith("-R"):
+            if flg.startswith("-L") or flg.startswith("-R") or \
+               flg.startswith("-F"):
                dir_list.append(flg)
             else:
+               if flg == "-framework":
+                  flg = "%s %s" % (flg, flag_list[i + 1])
+                  i += 1
                lib_list.append(flg)
+         i += 1
       new_list = dir_list + lib_list
       return Utils.stripDupInList(new_list)
    stripDupLinkerFlags = staticmethod(stripDupLinkerFlags)
@@ -1541,6 +1554,9 @@ class OptionsEvaluator:
       print "extending search path"
       print "  FLAGPOLL_PATH         environment variable that can be set to"
       print "                        extend the search path for .fpc/.pc files"
+      print ""
+      print ""
+      print "Send bug reports and/or feedback to flagpoll-users@vrsource.org"
       sys.exit(0)
 
 def main():
