@@ -1392,6 +1392,9 @@ class OptionsEvaluator:
 
          curr_arg = curr_arg + 1
 
+      if len(listedAgentNames) == 0:
+	 flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "Must specify at least one package")
+
       DepResolutionSystem().resolveDeps()
       pkgs = DepResolutionSystem().getPackages()
       for p in pkgs:
