@@ -1,0 +1,6 @@
+Name: b
+Description: B
+Version: 2
+Provides: b
+Cflags: -I/b2
+Arch: no_arch
