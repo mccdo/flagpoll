@@ -199,7 +199,7 @@ class Utils:
       if os.environ.has_key("FLAGPOLL_PATH"):
          flg_cfg_dir = os.environ["FLAGPOLL_PATH"].split(os.pathsep)
 
-      ld_dirs = ['LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH']
+      ld_dirs = ['LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH', 'PATH']
       for d in ld_dirs:
          if os.environ.has_key(d):
             cur_path = os.environ[d].split(os.pathsep)
@@ -213,8 +213,12 @@ class Utils:
       path_list.extend(flg_cfg_dir)
       path_list.extend(pkg_cfg_dir)
       path_list.extend(ld_path)
-      path_list.extend(["/usr/lib64/pkgconfig", "/usr/lib/pkgconfig", "/usr/share/pkgconfig",
-                   "/usr/lib64/flagpoll", "/usr/lib/flagpoll", "/usr/share/flagpoll"])
+      default_path_list = [pj('usr','lib64'), pj('usr','lib'), pj('usr','share')]
+      default_path_pkg = [pj(p,'pkgconfig') for p in default_path_list]
+      default_path_flg = [pj(p,'flagpoll') for p in defualt_path_list]
+      path_list.extend(default_path_pkg)
+      path_list.extend(default_path_flg)
+
       flagDBG().out(flagDBG.VERBOSE, "Utils.getPathList",
                     "Potential path list: " + str(path_list))
       path_list = [p for p in path_list if os.path.exists(p)]
@@ -268,7 +272,8 @@ class Utils:
          flg = flag_list[i].strip()
          if len(flg) > 0:
             if flg.startswith("-L") or flg.startswith("-R") or \
-               flg.startswith("-F"):
+               flg.startswith("-F") or flg.startswith("/libpath") or \
+	       flg.startswith("-libpath"):
                dir_list.append(flg)
             else:
                if flg == "-framework":
@@ -288,7 +293,7 @@ class Utils:
       for flg in flag_list:
          flg = flg.strip()
          if len(flg) > 0:
-            if flg.startswith("-I"):
+            if flg.startswith("-I") or flg.startswith("/I"):
                inc_list.append(flg)
             else:
                extra_list.append(flg)
@@ -304,7 +309,7 @@ class Utils:
       for flg in flag_list:
          flg = flg.strip()
          if len(flg) > 0:
-            if flg.startswith("-I"):
+            if flg.startswith("-I") or flg.startswith("/I"):
                inc_list.append(flg)
       return Utils.stripDupInList(inc_list)
    cflagsOnlyDirIncludeFlags = staticmethod(cflagsOnlyDirIncludeFlags)
@@ -316,7 +321,7 @@ class Utils:
       for flg in flag_list:
          flg = flg.strip()
          if len(flg) > 0:
-            if not flg.startswith("-I"):
+            if not flg.startswith("-I") and not flg.startswith("/I"):
                extra_list.append(flg)
       return Utils.stripDupInList(extra_list)
    cflagsOnlyOtherIncludeFlags = staticmethod(cflagsOnlyOtherIncludeFlags)
@@ -328,7 +333,7 @@ class Utils:
       for flg in flag_list:
          flg = flg.strip()
          if len(flg) > 0:
-            if flg.startswith("-l"):
+            if flg.startswith("-l") or flg.endswith(".lib"):
                lib_list.append(flg)
       return Utils.stripDupInList(lib_list)
    libsOnlyLinkerFlags = staticmethod(libsOnlyLinkerFlags)      
@@ -340,7 +345,9 @@ class Utils:
       for flg in flag_list:
          flg = flg.strip()
          if len(flg) > 0:
-            if not flg.startswith("-l") and not flg.startswith("-L") and not flg.startswith("-R"):
+            if not flg.startswith("-l") and not flg.startswith("-L") and not flg.startswith("-R")\
+	       and not flg.startswith("/libpath") and not flg.startswith("-libpath")\
+	       and not flg.endswith(".lib"):
                other_list.append(flg)
       return Utils.stripDupInList(other_list)
    libsOnlyOtherLinkerFlags = staticmethod(libsOnlyOtherLinkerFlags) 
@@ -352,7 +359,8 @@ class Utils:
       for flg in flag_list:
          flg = flg.strip()
          if len(flg) > 0:
-            if flg.startswith("-L") or flg.startswith("-R"):
+            if flg.startswith("-L") or flg.startswith("-R") or flg.startswith("/libpath")\
+	    or flg.startswith("-libpath"):
                dir_list.append(flg)
       return Utils.stripDupInList(dir_list)
    libDirsOnlyLinkerFlags = staticmethod(libDirsOnlyLinkerFlags) 
