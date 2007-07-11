@@ -1078,7 +1078,7 @@ class PkgInfo:
    def getSplitChar(self):
       self.evaluate()
       split_char = self.mVariableDict.get("SplitCharacter", ' ')
-      if split_char = "":
+      if split_char == "":
 	 split_char = ' '
       return split_char
 
