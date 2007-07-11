@@ -213,7 +213,7 @@ class Utils:
       path_list.extend(flg_cfg_dir)
       path_list.extend(pkg_cfg_dir)
       path_list.extend(ld_path)
-      default_path_list = [pj('usr','lib64'), pj('usr','lib'), pj('usr','share')]
+      default_path_list = [pj('/','usr','lib64'), pj('/','usr','lib'), pj('/','usr','share')]
       default_path_pkg = [pj(p,'pkgconfig') for p in default_path_list]
       default_path_flg = [pj(p,'flagpoll') for p in default_path_list]
       path_list.extend(default_path_pkg)
