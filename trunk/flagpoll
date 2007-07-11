@@ -1077,7 +1077,10 @@ class PkgInfo:
 
    def getSplitChar(self):
       self.evaluate()
-      return self.mVariableDict.get("SplitCharacter", ' ')
+      split_char = self.mVariableDict.get("SplitCharacter", ' ')
+      if split_char = "":
+	 split_char = ' '
+      return split_char
 
 class OptionsEvaluator:
    
