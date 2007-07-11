@@ -1,5 +1,9 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+2007-06-27 dshipton     Flagpoll works on windows
+			Optional SplitCharacter: char
+			for splitting vars into lists
+                        VERSION: 0.9.0
 [Version 0.8.3 Released - 07.02.2007]==========================================
 2007-06-27 dshipton     Flagpoll's fpc file uses a relative path
 			Support for frameworks from Patrick Hartling
