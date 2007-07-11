@@ -969,7 +969,7 @@ class PkgDB(object):
       for pkg in pkgs:
          if pkg:
             for var in variable_list:
-               var_list.extend(pkg.getVariable(var).split(' '))
+               var_list.extend(pkg.getVariable(var).split(pkg.getSplitChar()))
 
       return var_list
 
@@ -1074,6 +1074,10 @@ class PkgInfo:
    def getInfo(self):
       self.evaluate()
       return self.mVariableDict
+
+   def getSplitChar(self):
+      self.evaluate()
+      return self.mVariableDict.get("SplitCharacter", ' ')
 
 class OptionsEvaluator:
    
@@ -1495,16 +1499,16 @@ class OptionsEvaluator:
       if pkg_name == "":
          for pkg in pkgs:
             if pkg:
-               var_list.extend(pkg.getVariable(var).split(' '))
+               var_list.extend(pkg.getVariable(var).split(pkg.getSplitChar()))
                for extra_var in ext_vars:
-                  var_list.extend(pkg.getVariable(extra_var).split(' '))
+                  var_list.extend(pkg.getVariable(extra_var).split(pkg.getSplitChar()))
       else:
          for pkg in pkgs:
             if pkg:
                if pkg.getName() == pkg_name:
-                  var_list.extend(pkg.getVariable(var).split(' '))
+                  var_list.extend(pkg.getVariable(var).split(pkg.getSplitChar()))
                   for extra_var in ext_vars:
-                     var_list.extend(pkg.getVariable(extra_var).split(' '))
+                     var_list.extend(pkg.getVariable(extra_var).split(pkg.getSplitChar()))
       return var_list
 
    def printHelp(self):
