@@ -71,7 +71,9 @@ AC_DEFUN([_FLAGPOLL_SETUP],
         ok=yes
       else 
         if test "$major" -eq "$req_major"; then
-            if test "$minor" -ge "$req_minor"; then
+            if test "$minor" -gt "$req_minor"; then
+               ok=yes
+            elif test "$minor" -eq "$req_minor"; then
                if test "$micro" -ge "$req_micro"; then
                   ok=yes
                fi
