@@ -373,8 +373,9 @@ class Utils:
       for flg in flag_list:
          flg = flg.strip()
          if len(flg) > 0:
+            upper_flg = flg.upper()
             if not flg.startswith("-l") and not flg.startswith("-L") and not flg.startswith("-R")\
-	       and not flg.startswith("/libpath") and not flg.startswith("-libpath")\
+	       and not upper_flg.startswith("/LIBPATH") and not upper_flg.startswith("-LIBPATH")\
 	       and not flg.endswith(".lib"):
                other_list.append(flg)
       return Utils.stripDupInList(other_list)
