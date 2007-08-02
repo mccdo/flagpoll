@@ -1,5 +1,7 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+2007-06-27 dshipton     Minor bugfixes. Add /usr/lib32 to default search path.
+                        VERSION: 0.9.1
 2007-06-27 dshipton     Flagpoll works on windows
 			Optional SplitCharacter: char
 			for splitting vars into lists
