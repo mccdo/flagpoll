@@ -8,7 +8,7 @@ except:
 
 setup(
       name='flagpoll',
-      version='0.9.0',
+      version='0.9.1',
       description='Flagpoll is a tool for developers to use meta-data files for storing information on what is needed to compile their software.',
       author='Daniel E. Shipton',
       author_email='dshipton@infiscape.com',
