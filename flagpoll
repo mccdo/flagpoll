@@ -160,12 +160,11 @@ class Template:
 # End Snagging
 ####################################################################
 
-def tokenize(val):
+def tokenize(val, split_char):
    val = val.strip()
-   quote_mode = False
    results = []
    while len(val) > 0:
-      sn = val.find(' ')
+      sn = val.find(split_char)
       qn = val.find('"')
       #print " -> val: %s Len: %s" % (val, len(val))
 
@@ -175,7 +174,7 @@ def tokenize(val):
          # Find next quote.
          qn2 = val.find('"', qn+1)
          #print " -> Found second quote:", qn2
-         sn = val.find(' ', qn2+1)
+         sn = val.find(split_char, qn2+1)
          #print " -> Found next space:", sn
 
       if sn < 0:
@@ -998,7 +997,7 @@ class PkgDB(object):
       for pkg in pkgs:
          if pkg:
             for var in variable_list:
-               var_list.extend(tokenize(pkg.getVariable(var)))
+               var_list.extend(tokenize(pkg.getVariable(var), pkg.getSplitChar()))
 
       return var_list
 
@@ -1531,16 +1530,16 @@ class OptionsEvaluator:
       if pkg_name == "":
          for pkg in pkgs:
             if pkg:
-               var_list.extend(tokenize(pkg.getVariable(var)))
+               var_list.extend(tokenize(pkg.getVariable(var), pkg.getSplitChar()))
                for extra_var in ext_vars:
-                  var_list.extend(tokenize(pkg.getVariable(extra_var)))
+                  var_list.extend(tokenize(pkg.getVariable(extra_var, pkg.getSplitChar())))
       else:
          for pkg in pkgs:
             if pkg:
                if pkg.getName() == pkg_name:
-                  var_list.extend(tokenize(pkg.getVariable(var)))
+                  var_list.extend(tokenize(pkg.getVariable(var), pkg.getSplitChar()))
                   for extra_var in ext_vars:
-                     var_list.extend(tokenize(pkg.getVariable(extra_var)))
+                     var_list.extend(tokenize(pkg.getVariable(extra_var), pkg.getSplitChar()))
       return var_list
 
    def printHelp(self):
