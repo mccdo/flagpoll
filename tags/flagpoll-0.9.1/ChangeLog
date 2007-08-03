@@ -1,0 +1,89 @@
+DATE        AUTHOR      CHANGE
+---------- -----------  -------------------------------------------------------
+2007-06-27 dshipton     Minor bugfixes. Add /usr/lib32 to default search path.
+                        VERSION: 0.9.1
+2007-06-27 dshipton     Flagpoll works on windows
+			Optional SplitCharacter: char
+			for splitting vars into lists
+                        VERSION: 0.9.0
+[Version 0.8.3 Released - 07.02.2007]==========================================
+2007-06-27 dshipton     Flagpoll's fpc file uses a relative path
+			Support for frameworks from Patrick Hartling
+2007-02-23 dshipton     Search through path as follows:
+			User passed in paths --from-file=
+			FLAGPOLL_PATH
+			PKG_CONFIG_PATH
+			LD_LIBRARY_PATH
+			sytem paths
+                        VERSION: 0.8.3
+[Version 0.8.2 Released - 01.09.2007]==========================================
+2007-01-08 dshipton     Print errors to stderr
+                        VERSION: 0.8.2
+2006-11-20 dshipton     Try to identify possible culprits when failing
+[Version 0.8.1 Released - 11.10.2006]==========================================
+2006-11-10 dshipton     Better debug output
+2006-11-08 dshipton     Enable recursive package dependencies
+                        VERSION: 0.8.1
+[Version 0.8.0 Released - 09.13.2006]==========================================
+2006-09-05 dshipton     Support added for multi-line definitions via a \ which
+                        is how pkg-config denotes it.
+[Version 0.7.0 Released - 08.16.2006]==========================================
+2006-08-16 dshipton     New cleaned up options and better looking macros
+                        --info and --print-pkg-options work great
+                        VERSION: 0.7.0
+[Version 0.6.2 Released - 08.15.2006]==========================================
+2006-08-15 dshipton     Various code enhancements for OS level detection
+                        VERSION: 0.6.2
+2006-08-15 dshipton     Fixed --no-deps option processing
+                        VERSION: 0.6.1
+[Version 0.6.0 Released - 08.14.2006]==========================================
+2006-08-14 dshipton     Prefix is exported automatically, argument checking
+                        enforced.
+                        VERSION: 0.6.0
+2006-08-09 dshipton     Autoconf macro for flagpoll detection has been added
+                        as AM_PATH_FLAGPOLL
+2006-08-07 dshipton     When files are searched for we now take into account
+                        that flagpoll installs to lib/flagpoll share/flagpoll
+                        VERSION: 0.5.0
+[Version 0.4.1 Released - 08.07.2006]==========================================
+2006-08-04 dshipton     Now $fp_file_cwd available at beginning of var subst.
+                        VERSION: 0.4.1
+2006-08-04 dshipton     Use PKG_CONFIG_PATH and FLAGPOLL_CONFIG_PATH to look up
+                        extra pkginfos, command line options work and output
+                        things that are wrong waay better
+                        VERSION: 0.4.0
+[Version 0.3.1 Released - 08.03.2006]==========================================
+2006-07-31 dshipton     Don't crash when no command line options are given
+                        VERSION: 0.3.1
+2006-08-02 dshipton     Fix printing of extra spaces and how to detect var type
+[Version 0.3.0 Released - 08.02.2006]==========================================
+2006-07-31 dshipton     Added --keep-dups option
+                        VERSION: 0.3.0
+2006-07-31 dshipton     Added --no-deps option
+                        VERSION: 0.2.3
+2006-07-28 dshipton     Added --concat option
+                        VERSION: 0.2.2
+[Version 0.2.1 Released - 07.24.2006]==========================================
+2006-07-24 dshipton     Updated distutils script and help
+                        VERSION: 0.2.1
+2006-07-24 dshipton     Added --from-file and by-reference bug squashing
+                        VERSION: 0.2.0
+2006-07-20 dshipton     Added generic filtering from command line
+[Version 0.1.6 Released - 07.10.2006]==========================================
+2006-07-10 dshipton     Added Jeff Groves contributed fpcmaker to repository
+                        VERSION: 0.1.6
+[Version 0.1.5 Released - 07.05.2006]==========================================
+2006-07-05 dshipton     Depends on python 2.3 now, snagged Template from 2.4
+                        VERSION: 0.1.5
+[Version 0.1.4 Released - 06.30.2006]==========================================
+2006-06-29 dshipton     More filtering
+                        VERSION: 0.1.4
+2006-06-28 dshipton     Multiple Package Polling capabilities
+                        VERSION: 0.1.3
+2006-06-27 dshipton     Advanced flag polling and debug logging capabilities
+                        VERSION: 0.1.2
+2006-06-11 dshipton     Initial flag polling and debug logging capabilities
+2006-06-11 dshipton     License and README
+                        VERSION: 0.1.1
+[Version 0.1.0 Import - 06.11.2006]============================================
+2006-06-06 dshipton     Project Created
