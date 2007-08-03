@@ -1532,7 +1532,7 @@ class OptionsEvaluator:
             if pkg:
                var_list.extend(tokenize(pkg.getVariable(var), pkg.getSplitChar()))
                for extra_var in ext_vars:
-                  var_list.extend(tokenize(pkg.getVariable(extra_var, pkg.getSplitChar())))
+                  var_list.extend(tokenize(pkg.getVariable(extra_var), pkg.getSplitChar()))
       else:
          for pkg in pkgs:
             if pkg:
