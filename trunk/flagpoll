@@ -295,12 +295,13 @@ class Utils:
       dir_list = []
       list_len = len(flag_list)
       i = 0
+      vc_linker_flag_re = _re.compile(r'^[/-]libpath:', _re.I)
+      other_linker_flag_re = _re.compile(r'^-[LRF]')
       while i < list_len:
          flg = flag_list[i].strip()
          if len(flg) > 0:
-            if flg.startswith("-L") or flg.startswith("-R") or \
-               flg.startswith("-F") or flg.startswith("/libpath") or \
-	       flg.startswith("-libpath"):
+            if (other_linker_flag_re.match(flg) is not None or
+                vc_linker_flag_re.match(flg) is not None):
                dir_list.append(flg)
             else:
                if flg == "-framework":
@@ -384,11 +385,13 @@ class Utils:
      # List is constructed as such ("-L /path", "-L/sfad", "-fpge", "-l pg", "-lpg")
       # We do slightly dumb stripping though
       dir_list = []
+      vc_linker_flag_re = _re.compile(r'^[/-]libpath:', _re.I)
+      other_linker_flag_re = _re.compile(r'^-[LRF]')
       for flg in flag_list:
          flg = flg.strip()
          if len(flg) > 0:
-            if flg.startswith("-L") or flg.startswith("-R") or flg.startswith("/libpath")\
-	    or flg.startswith("-libpath"):
+            if (other_linker_flag_re.match(flg) is not None or
+                vc_linker_flag_re.match(flg) is not None):
                dir_list.append(flg)
       return Utils.stripDupInList(dir_list)
    libDirsOnlyLinkerFlags = staticmethod(libDirsOnlyLinkerFlags) 
