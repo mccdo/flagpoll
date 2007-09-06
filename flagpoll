@@ -189,7 +189,7 @@ def tokenize(val, split_char):
 
 class Utils:
    # Holds collection of small utility functions
-   
+
    EXTRA_FLAGPOLL_SEARCH_PATHS = ""
    EXTRA_FLAGPOLL_FILES = ""
    path_list_cache = None                         # Cache of found path lists.  (only calcuate once)
@@ -199,7 +199,7 @@ class Utils:
    def addPossibleError(pos_err):
       Utils.FLAGPOLL_LIST_OF_POSSIBLE_ERRORS.append(pos_err)
    addPossibleError = staticmethod(addPossibleError)
-      
+
    def getPossibleErrors():
       return Utils.stripDupInList(Utils.FLAGPOLL_LIST_OF_POSSIBLE_ERRORS)
    getPossibleErrors = staticmethod(getPossibleErrors)
@@ -214,7 +214,7 @@ class Utils:
    def getPathList():
       if None != Utils.path_list_cache:
          return Utils.path_list_cache
-         
+
       #TODO: expand LD_LIBRARY_PATH to 64/32/etc???
       pkg_cfg_dir = []
       flg_cfg_dir = []
@@ -300,8 +300,8 @@ class Utils:
       while i < list_len:
          flg = flag_list[i].strip()
          if len(flg) > 0:
-            if (other_linker_flag_re.match(flg) is not None or
-                vc_linker_flag_re.match(flg) is not None):
+            if (other_linker_flag_re.match(flg) is not None\
+                  or vc_linker_flag_re.match(flg) is not None):
                dir_list.append(flg)
             else:
                if flg == "-framework":
@@ -364,7 +364,7 @@ class Utils:
             if flg.startswith("-l") or flg.endswith(".lib"):
                lib_list.append(flg)
       return Utils.stripDupInList(lib_list)
-   libsOnlyLinkerFlags = staticmethod(libsOnlyLinkerFlags)      
+   libsOnlyLinkerFlags = staticmethod(libsOnlyLinkerFlags)
 
    def libsOnlyOtherLinkerFlags(flag_list):
      # List is constructed as such ("-L /path", "-L/sfad", "-fpge", "-l pg", "-lpg")
@@ -374,9 +374,12 @@ class Utils:
          flg = flg.strip()
          if len(flg) > 0:
             upper_flg = flg.upper()
-            if not flg.startswith("-l") and not flg.startswith("-L") and not flg.startswith("-R")\
-	       and not upper_flg.startswith("/LIBPATH") and not upper_flg.startswith("-LIBPATH")\
-	       and not flg.endswith(".lib"):
+            if not flg.startswith("-l") \
+                  and not flg.startswith("-L")\
+                  and not flg.startswith("-R")\
+                  and not upper_flg.startswith("/LIBPATH")\
+                  and not upper_flg.startswith("-LIBPATH")\
+                  and not flg.endswith(".lib"):
                other_list.append(flg)
       return Utils.stripDupInList(other_list)
    libsOnlyOtherLinkerFlags = staticmethod(libsOnlyOtherLinkerFlags) 
@@ -519,7 +522,7 @@ class DepResolutionSystem(object):
    """
 
    __initialized = False
-   
+
    def __new__(type):
       if not '_the_instance' in type.__dict__:
          type._the_instance = object.__new__(type)
@@ -572,7 +575,7 @@ class DepResolutionSystem(object):
             arch_list.append("ppc")
       if platform.system().startswith("IRIX"):
          arch_list.append(requires)
-      
+
       new_filter = Filter("Arch", lambda x,v=arch_list: x in v)
       self.addFilter(new_filter)
 
@@ -668,8 +671,8 @@ class DepResolutionSystem(object):
       # Check if the first round through we found something
       # Otherwise we need to start removing packages that aren't viable
       # during the loop
-      self.mSatisfied = (len(self.mResolvedPackageList) != 0)      
-      
+      self.mSatisfied = (len(self.mResolvedPackageList) != 0)
+
       # remove top of packages that added Filters.
       # then move on to resolving again
       # remove more if neccesary
@@ -704,7 +707,7 @@ class PkgAgent:
    def __init__(self, name):
       if DepResolutionSystem().checkAgentExists(name):
          flagDBG().out(flagDBG.ERROR, "PkgAgent", "Package Agent %s already exists" % self.mName)
-         
+
       self.mName = name
       flagDBG().out(flagDBG.INFO, "PkgAgent", "Creating:" + str(self.mName))
 
@@ -819,7 +822,7 @@ class PkgAgent:
          # Make depend list if we are supposed to
          self.updateFilters()
          self.makeDependList()
-         
+
          for pkg in self.mAgentDependList:
             pkgs.extend(pkg.getCurrentPackageList(packageList))
       return pkgs
@@ -860,7 +863,7 @@ class PkgAgent:
 
       # TODO: checkFilters and add them
       # if a pkg is in visitedList then add yourself to agentChangeList
-      
+
       for pkg in self.mAgentDependList:
          pkg.update(agentVisitedList, agentChangeList)
       return
@@ -876,7 +879,7 @@ class PkgAgent:
          for f in self.mFilterList:
             Utils.addPossibleError(str(self.mName) + " -> " + str(f.getVarName()))
          self.mCurrentPackage = []
-      
+
 
    def reset(self):
       flagDBG().out(flagDBG.INFO, "PkgAgent.reset", "Resetting package: %s" % self.mName)
@@ -894,14 +897,14 @@ class Filter:
    """ A single Filter that knows how to filter the list it recieves
        Will be inheireted....?..?
    """
-   
+
    def __init__(self, variableName, testCallable):
       self.mVarName = variableName
       self.mTestCallable = testCallable
 
    def getVarName(self):
       return self.mVarName
-      
+
    def filter(self, pkg_info_list):
       ret_pkg_list = []
       # Filter first
@@ -914,26 +917,26 @@ class Filter:
          else:
             flagDBG().out(flagDBG.INFO, "Filter", "Failed: %s:" % pkg.getName() +
                      " %s is " % self.mVarName + str(var))
-            
+
       # Now sort
       ret_pkg_list.sort(lambda lhs, rhs: cmp(rhs.getVariable(self.mVarName),
                                             lhs.getVariable(self.mVarName)))
-      
+
       return ret_pkg_list
 
 #requires: qt == 4.5
 
 #Filter("Version", lambda x: x <= "4.5")
 #Filter("Version", lambda x: x <= "4.5")
-   
+
 class PkgDB(object):
    """ Holds all the neccesary information to evaluate itself when needed.
        Is in charge of holding a list of PkgInfo's that contain info
        about the package.
    """
-   
+
    __initialized = False
-   
+
    def __init__(self):
       if self.__initialized:
          return
@@ -954,8 +957,7 @@ class PkgDB(object):
       for name in list_of_package_names:
          print name
       sys.exit(0)
-         
-      
+
    def getVariables(self, name, variable_list):
       flagDBG().out(flagDBG.INFO, "PkgDB.getVariable", 
                     "Finding " + str(variable_list) + " in " + str(name))
@@ -976,17 +978,17 @@ class PkgDB(object):
          flagDBG().out(flagDBG.ERROR, "PkgDB.CheckPackage", "Package %s not found." % name)
 
       return False
-         
+
    def getVariablesAndDeps(self, pkg_list, variable_list):
       flagDBG().out(flagDBG.INFO, "PkgDB.getVariablesAndDeps", 
                     "Finding " + str(variable_list) + " in " + str(pkg_list))
-      
+
       if DepResolutionSystem().checkPrivateRequires():
          temp_var_list = []
          for var in variable_list:
             temp_var_list.append(var.join(".private"))
          variable_list = variable_list + temp_var_list
-      
+
       for name in pkg_list:
          if self.mPkgInfos.has_key(name):
             agent = DepResolutionSystem().createAgent(name)
@@ -1009,7 +1011,7 @@ class PkgDB(object):
          return self.mPkgInfos[name]
       else:
          flagDBG().out(flagDBG.ERROR, "PkgDB.getPkgInfos", "Package %s not found." % name)
-              
+
    def exists(self, name):
       return self.mPkgInfos.has_key(name)
 
@@ -1037,7 +1039,6 @@ class PkgDB(object):
 
    def populatePkgInfoDBPcFiles(self):
       dict_to_pop_from = self.buildPcFileDict()
-         
       for (pkg,files) in dict_to_pop_from.iteritems():
          for f in files:
             self.mPkgInfos.setdefault(pkg,[]).append(PkgInfo(pkg, f, "pc"))
@@ -1087,7 +1088,6 @@ class PkgInfo:
       self.mVariableDict = varDict
       if self.mType == "fpc":
          self.mIsEvaluated = True
-      
 
    def getVariable(self, variable):
       self.evaluate()
@@ -1101,7 +1101,7 @@ class PkgInfo:
          flagDBG().out(flagDBG.INFO, "PkgInfo.evaluate", "Evaluating %s" % self.mName)
          self.mVariableDict= Utils.parsePcFile(self.mFile)
          self.mIsEvaluated = True
-   
+
    def getInfo(self):
       self.evaluate()
       return self.mVariableDict
@@ -1110,11 +1110,11 @@ class PkgInfo:
       self.evaluate()
       split_char = self.mVariableDict.get("SplitCharacter", ' ')
       if split_char == "":
-	 split_char = ' '
+         split_char = ' '
       return split_char
 
 class OptionsEvaluator:
-   
+
    def __init__(self):
       if len(sys.argv) < 2:
          self.printHelp()
@@ -1126,7 +1126,7 @@ class OptionsEvaluator:
 
       # Process args in the order that they were recieved.  Some options are not
       # shown below because they are sub-options of an option below (--strip-dups)
-      
+
       for option in args:
          if option.startswith("--verbose-debug"):
             flagDBG().setLevel(flagDBG.VERBOSE)
@@ -1146,7 +1146,7 @@ class OptionsEvaluator:
             PkgDB().printAllPackages()
             continue
 
-            
+
       listedAgentNames = []
       agent = None
       num_args = len(args)
@@ -1154,7 +1154,7 @@ class OptionsEvaluator:
       output_options = [] # (option, name/"")
       important_options = [] # ones that need special attention
       while curr_arg < num_args:
-      
+
          if args[curr_arg].startswith("--atleast-version"):
             val_start = args[curr_arg].find('=') + 1
             atleast_version = args[curr_arg][val_start:]
@@ -1405,7 +1405,7 @@ class OptionsEvaluator:
             output_options.append((get_string, ""))
             curr_arg = curr_arg + 1
             continue
-         
+
          if args[curr_arg].startswith("--get"):
             rlen = len("--get-")
             get_string = args[curr_arg][rlen:]
@@ -1439,7 +1439,8 @@ class OptionsEvaluator:
          curr_arg = curr_arg + 1
 
       if len(listedAgentNames) == 0:
-	 flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "Must specify at least one package")
+         flagDBG().out(flagDBG.ERROR, "OptionsEvaluator",
+                        "Must specify at least one package")
 
       DepResolutionSystem().resolveDeps()
       pkgs = DepResolutionSystem().getPackages()
@@ -1449,14 +1450,16 @@ class OptionsEvaluator:
                if option == "exists":
                   print "no"
                   sys.exit(1)
-            flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No valid configurations found")
-            
+            flagDBG().out(flagDBG.ERROR, "OptionsEvaluator",
+                           "No valid configurations found")
+
       if len(pkgs) == 0:
          for option in important_options:
             if option == "exists":
                print "no"
                sys.exit(1)
-         flagDBG().out(flagDBG.ERROR, "OptionsEvaluator", "No valid configurations found")
+         flagDBG().out(flagDBG.ERROR, "OptionsEvaluator",
+                        "No valid configurations found")
          sys.exit(1)
 
       concat = False
@@ -1489,8 +1492,7 @@ class OptionsEvaluator:
                                  "Libs", "Libs.private", "Cflags", "Provides",
                                  "Arch", "FlagpollFilename", "prefix" ]:
                      print "   " +  key.replace('_','-')
-            
-      
+
       #print output_options
       #output_options = []
       #output_single = []
@@ -1521,7 +1523,7 @@ class OptionsEvaluator:
 
       if concat:
          Utils.printList(Utils.stripDupInList(concat_list))
-            
+
 
    def getVarFromPkgs(self, var, pkgs, pkg_name=""):
       var_list = []
