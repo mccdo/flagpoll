@@ -563,6 +563,7 @@ class DepResolutionSystem(object):
       if platform.system() == "Linux":
          if requires == "64":
             arch_list.append("x86_64")
+            arch_list.append("x64")
          if requires == "32":
             arch_list.append("i386")
             arch_list.append("i486")
