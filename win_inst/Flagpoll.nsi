@@ -1,5 +1,5 @@
 !define PRODUCT_NAME "Flagpoll"
-!define FLAGPOLL_VERSION "0.9.0"
+!define FLAGPOLL_VERSION "0.9.1"
 !define PRODUCT_VERSION "${FLAGPOLL_VERSION}"
 !define FILE_VERSION "${FLAGPOLL_VERSION}.0"
 !define PRODUCT_PUBLISHER "Daniel Shipton"
