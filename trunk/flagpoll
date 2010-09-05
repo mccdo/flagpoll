@@ -278,7 +278,7 @@ class Utils:
             if len(item) > 0:
                new_list.append(item)
             continue
-         if item == '-framework':
+         if item in ('-framework', '-arch', '-isysroot'):
             item = '%s %s' % (item, gen_list[i + 1])
             i += 1
          if item not in new_list:
@@ -304,7 +304,7 @@ class Utils:
                   or vc_linker_flag_re.match(flg) is not None):
                dir_list.append(flg)
             else:
-               if flg == "-framework":
+               if flg in ("-framework", "-arch", "-isysroot"):
                   flg = "%s %s" % (flg, flag_list[i + 1])
                   i += 1
                lib_list.append(flg)
@@ -318,13 +318,19 @@ class Utils:
       # We do slightly dumb stripping though
       inc_list = []
       extra_list = []
-      for flg in flag_list:
-         flg = flg.strip()
+      list_len = len(flag_list)
+      i = 0
+      while i < list_len:
+         flg = flag_list[i].strip()
          if len(flg) > 0:
             if flg.startswith("-I") or flg.startswith("/I"):
                inc_list.append(flg)
+            elif flg in ("-arch", "-isysroot"):
+               extra_list.append("%s %s" % (flg, flag_list[i + 1]))
+               i += 1
             else:
                extra_list.append(flg)
+         i += 1
       extra_list.sort()
       new_list = inc_list + extra_list
       return Utils.stripDupInList(new_list)
