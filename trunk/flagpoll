@@ -248,7 +248,11 @@ class Utils:
 
       flagDBG().out(flagDBG.VERBOSE, "Utils.getPathList",
                     "Potential path list: " + str(path_list))
-      path_list = [p for p in path_list if os.path.exists(p)]
+      clean_path_list = []
+      for p in path_list:
+         if os.path.exists(p) and os.path.isdir(p) and not p in clean_path_list:
+            clean_path_list.append(p)
+      path_list = clean_path_list
       flagDBG().out(flagDBG.INFO, "Utils.getPathList",
                     "Using path list: " + str(path_list))
       Utils.path_list_cache = path_list
