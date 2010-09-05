@@ -1,0 +1,125 @@
+<HTML>
+<HEAD>
+<TITLE>flagpoll</TITLE>
+</HEAD>
+<BODY>
+<H1>flagpoll</H1>
+<HR>
+<PRE>
+<!-- Manpage converted by man2html 3.0.1 -->
+
+</PRE>
+<H2>DESCRIPTION</H2><PRE>
+       usage: flagpoll pkg options [pkg options] [generic options]
+
+   <B>generic</B> <B>options:</B>
+       <B>--help</B> show this help message and exit
+
+       <B>--version</B>
+              output version of flagpoll
+
+       <B>--list-all</B>
+              list all known packages
+
+       <B>--debug</B>
+              show debug information
+
+       <B>--verbose-debug</B>
+              show verbose debug information
+
+       <B>--extra-paths</B>=<I>EXTRA</I><B>_</B><I>PATHS</I>
+              extra paths for flagpoll to search for meta-data files
+
+       <B>--concat</B>
+              concatenate all output and output as one line
+
+       <B>--keep-dups</B>
+              do not strip out all duplicate info from options
+
+       <B>--info</B> show information for packages
+
+       <B>--print-pkg-options</B>
+              show pkg specific options
+
+   <B>options:</B>
+       <B>--modversion</B>
+              output version for package
+
+       <B>--require</B>=<I>REQUIRE</I>
+              adds additional requirements for packages ex. 32/64
+
+       <B>--libs</B> output all linker flags
+
+       <B>--static</B>
+              output linker flags for static linking
+
+       <B>--libs-only-l</B>
+              output <B>-l</B> flags
+
+       <B>--libs-only-other</B>
+              output other libs (e.g. <B>-pthread</B>)
+
+       <B>--libs-only-L</B>
+              output <B>-L</B> flags
+              use the specified FILE for the package
+
+       <B>--no-deps</B>
+              do not lookup dependencies for the package
+
+       <B>--atleast-version</B>=<I>ATLEAST</I><B>_</B><I>VERSION</I>
+              return 0 if the module is at least version ATLEAST_VERSION
+
+       <B>--exact-version</B>=<I>EXACT</I><B>_</B><I>VERSION</I>
+              return 0 if the module is exactly version EXACT_VERSION
+
+       <B>--max-release</B>=<I>MAX</I><B>_</B><I>RELEASE</I>
+              return  0  if  the  module  has  a release that has a version of
+              MAX_RELEASE and will return the max
+
+       <B>--variable</B>=<I>VARIABLE</I>
+              get the value of a variable
+
+       dynamic options(replace VAR with a variable you want to get/filter on)
+
+              NOTE: replace underscores with dashes in VAR  NOTE:  quotes  are
+              needed around &lt;,&gt;,= combinations
+
+       <B>--get-VAR</B>
+              get VAR from package
+
+       <B>--get-all-VAR</B>
+              get VAR from package and its deps
+
+       <B>--require-VAR[</B>&lt;,&gt;,=VAL]
+              require  that  a  var is defined for a package or optionally use
+              equality operators against VAL
+
+       <B>--require-all-VAR[</B>&lt;,&gt;,=VAL]
+              require that a var is defined for all packages or optionally use
+              equality operators against VAL
+
+       extending search path
+
+       FLAGPOLL_PATH
+              environment  variable  that can be set to extend the search path
+              for .fpc/.pc files
+
+       Send bug reports and/or feedback to flagpoll-users@vrsource.org
+
+
+</PRE>
+<H2>SEE ALSO</H2><PRE>
+       The full documentation for <B>flagpoll</B> is maintained as a Texinfo  manual.
+       If  the <B>info</B> and <B>flagpoll</B> programs are properly installed at your site,
+       the command
+
+              <B>info</B> <B>flagpoll</B>
+
+</PRE>
+<HR>
+<ADDRESS>
+Man(1) output converted with
+<a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>
+</ADDRESS>
+</BODY>
+</HTML>
