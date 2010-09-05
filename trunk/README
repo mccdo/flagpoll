@@ -41,11 +41,15 @@ Python 2.3 or greater
 ---- Release ----
 To create a release...
 1. Update flagpoll.fpc with the appropriate flagpoll version
-2. Update the AUTHORS and ChangeLog files 
-3. Update the flagpoll.1 with new version info
-3. Tag the new revision
-4. Make zip, tar, rpm, and windows installers
-5. Upload files to http://code.google.com/p/flagpoll/downloads/list
+2. Update flagpoll with the appropriate flagpoll version in getFlagpollVersion
+3. Update the AUTHORS and ChangeLog files 
+4. Run help2man to update flagpoll.1
+   help2man ./flagpoll > flagpoll.1
+5. Run man2html to update the flagpoll-manual.html
+   man ./flagpoll.1 | man2html -seealso -title flagpoll > flagpoll-manual.html
+6. Tag the new revision
+7. Make zip, tar, rpm, and windows installers
+8. Upload files to http://code.google.com/p/flagpoll/downloads/list
 
 ---- Documentation ----
 Available online at:
