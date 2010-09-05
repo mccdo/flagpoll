@@ -1,0 +1,14 @@
+exclude fpcmaker.py
+flagpoll.1
+flagpoll.m4
+exclude *.pyc
+exclude *.pyo
+flagpoll-manual.html
+flagpoll
+setup.cfg
+setup.py
+flagpoll.fpc
+ChangeLog
+README
+TODO
+LICENSE
