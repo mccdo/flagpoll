@@ -5,4 +5,4 @@ Description: Program for retrieving meta-data from installed packages.
 URL: http://code.google.com/p/flagpoll/
 Provides: flagpoll
 Arch: no_arch
-Version: 0.9.2
+Version: 0.9.3
