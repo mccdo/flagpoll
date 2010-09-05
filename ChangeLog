@@ -1,5 +1,11 @@
 DATE        AUTHOR      CHANGE
 ---------- -----------  -------------------------------------------------------
+[Version 0.9.2 Released - 09.05.2010]==========================================
+2010-09-05 Ryan Pavlik  An improved path clean method to ensure that only 
+                        unique paths are used in the fpc file search process.
+2010-09-04 Patrick      The -arch flag is similar to -framework in that it 
+           Hartling     needs to have the following argument in the list paired 
+                        with it when processing flags to return. 
 2007-06-27 dshipton     Minor bugfixes. Add /usr/lib32 to default search path.
                         VERSION: 0.9.1
 2007-06-27 dshipton     Flagpoll works on windows
