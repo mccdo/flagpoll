@@ -1,0 +1,56 @@
+Flagpoll
+------------------------------
+---- Background ----
+Flagpoll is a tool for developers to use meta-data files for storing information
+on what is needed to compile their software. Think of it as the rpm of software
+development. It enables developers total control over which
+packages, versions, architectures, etc. that they want to use meta-data from.
+
+---- Use ----
+Its usage is almost the same as pkg-config usage with the following additions/considerations.
+
+--- Installation ---
+Flagpoll uses Python's distutils for installation. A basic install will look like:
+> python setup.py install
+This will install to /usr
+
+> python setup.py install --prefix=/path/to/install
+Using --prefix you can give it a path to install to
+
+> python setup.py bdist_rpm
+This will make an rpm that you can install
+
+For more documentation on using Python's distutils go here:
+http://docs.python.org/dist/dist.html
+
+---- Dependencies ----
+Python 2.3 or greater
+
+---- Features ---
+* Completely eliminates need for *-config scripts
+* Backwards compatible with Pkg-Config .pc files
+* Not tied to any software...completely generic
+* Smart version lookup(Pkg-Config has "first in list that matches")
+   * Able to get newest version of a package and all of its dependencies that work together.
+   * Able to get newest point release or patch release of a package and all of its dependencies that work together.
+   * Able to cope with multiple architectures, multiple compilers, and parallel software installs
+   * Able to filter packages in a more generic arbitrary way
+* Relaxed naming conventions on its own file format
+* Evaluated file format for incorporation of logic (more about this later)
+
+---- Release ----
+To create a release...
+1. Update flagpoll.fpc with the appropriate flagpoll version
+2. Update flagpoll with the appropriate flagpoll version in getFlagpollVersion
+3. Update the AUTHORS and ChangeLog files 
+4. Run help2man to update flagpoll.1
+   help2man ./flagpoll > flagpoll.1
+5. Run man2html to update the flagpoll-manual.html
+   man ./flagpoll.1 | man2html -seealso -title flagpoll > flagpoll-manual.html
+6. Tag the new revision
+7. Make zip, tar, rpm, and windows installers
+8. Upload files to http://code.google.com/p/flagpoll/downloads/list
+
+---- Documentation ----
+Available online at:
+http://code.google.com/p/flagpoll/
