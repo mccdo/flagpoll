@@ -38,6 +38,15 @@ Python 2.3 or greater
 * Relaxed naming conventions on its own file format
 * Evaluated file format for incorporation of logic (more about this later)
 
+---- Release ----
+To create a release...
+1. Update flagpoll.fpc with the appropriate flagpoll version
+2. Update the AUTHORS and ChangeLog files 
+3. Update the flagpoll.1 with new version info
+3. Tag the new revision
+4. Make zip, tar, rpm, and windows installers
+5. Upload files to http://code.google.com/p/flagpoll/downloads/list
+
 ---- Documentation ----
 Available online at:
-https://realityforge.vrsource.org/view/FlagPoll/WebHome
+http://code.google.com/p/flagpoll/
