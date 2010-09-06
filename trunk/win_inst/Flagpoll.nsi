@@ -1,9 +1,9 @@
 !define PRODUCT_NAME "Flagpoll"
-!define FLAGPOLL_VERSION "0.9.1"
+!define FLAGPOLL_VERSION "0.9.4"
 !define PRODUCT_VERSION "${FLAGPOLL_VERSION}"
 !define FILE_VERSION "${FLAGPOLL_VERSION}.0"
 !define PRODUCT_PUBLISHER "Daniel Shipton"
-!define PRODUCT_WEB_SITE "https://realityforge.vrsource.org/view/FlagPoll/WebHome"
+!define PRODUCT_WEB_SITE "http://code.google.com/p/flagpoll/"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME} ${FLAGPOLL_VERSION}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME} ${FLAGPOLL_VERSION}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
@@ -151,7 +151,8 @@ Section -Post
 SectionEnd
 
 Function .onInit
-  Call GetParameters
+  #Call GetParameters
+  ${GetParameters} $R0
   Pop $2
   ${GetOptions} $2 "/app=" $FLAGPOLL_INST
   ${GetOptions} $2 "/doc=" $DOC_INST
