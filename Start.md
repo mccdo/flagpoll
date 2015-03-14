@@ -1,0 +1,15 @@
+# Introduction #
+
+Flagpoll is a tool for developers to use meta-data files for storing information on what is needed to compile their software.
+
+
+## Using Flagpoll With VR Juggler ##
+
+When using flagpoll with VR Juggler it is necessary for the flagpoll aclocal files to be accessible to the VR Juggler build. If you install flagpoll in a default location (e.g. /usr/local, /usr,...) the files can be found automatically. If you install flagpoll in a non-standard location you need to set the ACLOCAL\_FLAGS environment variable to include the flagpoll aclocal files. Here is an example:
+```
+export ACLOCAL_FLAGS="-I <location where you installed flagpoll>/share/aclocal" 
+```
+or
+```
+setenv ACLOCAL_FLAGS "-I <location where you installed flagpoll>/share/aclocal" 
+```
