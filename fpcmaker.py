@@ -37,7 +37,7 @@ import getopt
 
 ##String prompts for the input
 
-varPrompt = """Convience variables (one 'var_name= var_definition' per line,""" + \
+varPrompt = """Convenience variables (one 'var_name= var_definition' per line,""" + \
             """ empty line when done)"""
 namePrompt = "Formal Name"
 descriptionPrompt = "Description"
